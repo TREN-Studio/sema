@@ -472,6 +472,8 @@ def generate_view_html(manifest, brain, original_filename):
 const QA = {qa_json};
 const KEYWORDS = {keywords_json};
 const SEARCH_TEXT = {json.dumps(brain.get("search_text", "")[:3000], ensure_ascii=False)};
+const CONTENT_TYPE = "{content_type}";
+const ORIGINAL_FILE = "content/{original_filename}";
 
 // Render keywords
 const kc = document.getElementById('keywords-container');
@@ -483,9 +485,16 @@ KEYWORDS.forEach(kw => {{
 }});
 
 // Preview
-document.getElementById('preview-area').textContent = 
-  SEARCH_TEXT ? SEARCH_TEXT.substring(0, 800) + (SEARCH_TEXT.length > 800 ? '\\n...': '') 
-              : 'No text preview available for this file type.';
+const previewArea = document.getElementById('preview-area');
+if (CONTENT_TYPE.startsWith('image/')) {{
+  previewArea.innerHTML = `<img src="${{ORIGINAL_FILE}}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--border);" alt="Image Preview">`;
+}} else if (CONTENT_TYPE.startsWith('media/video')) {{
+  previewArea.innerHTML = `<video controls src="${{ORIGINAL_FILE}}" style="max-width: 100%; border-radius: 4px; border: 1px solid var(--border);"></video>`;
+}} else if (CONTENT_TYPE.startsWith('media/audio')) {{
+  previewArea.innerHTML = `<audio controls src="${{ORIGINAL_FILE}}" style="width: 100%;"></audio>`;
+}} else {{
+  previewArea.textContent = SEARCH_TEXT ? SEARCH_TEXT.substring(0, 1500) + (SEARCH_TEXT.length > 1500 ? '\\n...': '') : 'No text preview available for this file type.';
+}}
 
 // Ask the file
 function askFile() {{
