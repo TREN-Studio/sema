@@ -29,7 +29,7 @@ echo  [2/4] Creating file type handler...
 reg add "HKCR\SEMAFile" /ve /d "SEMA Semantic File" /f >nul 2>&1
 reg add "HKCR\SEMAFile\DefaultIcon" /ve /d "shell32.dll,13" /f >nul 2>&1
 reg add "HKCR\SEMAFile\shell\open" /ve /d "Open with Browser" /f >nul 2>&1
-reg add "HKCR\SEMAFile\shell\open\command" /ve /d "explorer.exe \"%1\"" /f >nul 2>&1
+reg add "HKCR\SEMAFile\shell\open\command" /ve /d "explorer.exe \"%%1\"" /f >nul 2>&1
 echo       OK
 
 echo  [3/4] Registering MIME type...
