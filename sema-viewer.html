@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEMA Viewer — Open Any SEMA File</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --teal: #00C8B4;
+  --bg: #080810;
+  --bg2: #0D0D1A;
+  --border: rgba(0,200,180,0.15);
+  --border2: rgba(255,255,255,0.06);
+  --text: #E0E0F0;
+  --font: 'Space Grotesk', system-ui, sans-serif;
+}
+
+body, html {
+  margin: 0; padding: 0;
+  width: 100%; height: 100%;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+/* Background Grid */
+.grid-bg {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,200,180,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,180,0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Header */
+header {
+  position: absolute; top: 0; left: 0; right: 0;
+  padding: 1.2rem 2rem;
+  display: flex; justify-content: space-between; align-items: center;
+  border-bottom: 1px solid var(--border2);
+  z-index: 10;
+  background: rgba(8,8,16,0.5);
+  backdrop-filter: blur(12px);
+}
+
+.brand {
+  font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 8px;
+  text-decoration: none; color: var(--text);
+}
+.brand span { color: var(--teal); }
+.brand-icon {
+  width: 24px; height: 24px; background: var(--teal); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: #000; font-weight: 600; font-size: 12px; font-family: 'JetBrains Mono', monospace;
+}
+
+.back-btn {
+  color: rgba(224,224,240,0.5); text-decoration: none; font-size: 14px;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: var(--text); }
+
+/* Main Drop Zone */
+main {
+  position: absolute; top: 60px; left: 0; right: 0; bottom: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 5;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border);
+  border-radius: 20px;
+  width: 90%; max-width: 600px;
+  padding: 4rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(0,200,180,0.02);
+  position: relative;
+}
+
+.drop-zone.over {
+  border-color: var(--teal);
+  background: rgba(0,200,180,0.05);
+  transform: scale(1.02);
+}
+
+.drop-icon-wrap {
+  width: 80px; height: 80px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 0 40px rgba(0,200,180,0.1);
+}
+
+.drop-icon-wrap svg {
+  width: 32px; height: 32px;
+  stroke: var(--teal); fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.drop-zone h2 { font-size: 1.8rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.5px; }
+.drop-zone p { font-size: 15px; color: rgba(224,224,240,0.5); margin-bottom: 2rem; }
+
+.btn {
+  background: var(--teal); color: #000;
+  border: none; padding: 12px 28px; border-radius: 8px;
+  font-family: var(--font); font-size: 15px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,200,180,0.2); }
+
+#drop-input { display: none; }
+
+/* Viewer Frame */
+#viewer-container {
+  display: none;
+  width: 100%; height: 100%;
+  position: absolute; top: 0; left: 0;
+  z-index: 20;
+  background: #0d1117;
+}
+
+.viewer-header {
+  height: 50px; background: rgba(8,8,16,0.9);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; border-bottom: 1px solid var(--border2);
+}
+
+.viewer-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--teal);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.viewer-close {
+  background: none; border: none; color: rgba(224,224,240,0.5);
+  font-size: 24px; cursor: pointer; transition: color 0.2s;
+  display: flex; align-items: center; justify-content: center;
+}
+.viewer-close:hover { color: #fff; }
+
+iframe {
+  width: 100%; height: calc(100% - 50px);
+  border: none; background: transparent;
+}
+
+/* Loading Overlay */
+#loader {
+  display: none; position: absolute; inset: 0;
+  background: var(--bg); z-index: 30;
+  flex-direction: column; align-items: center; justify-content: center;
+}
+.spinner {
+  width: 40px; height: 40px; border: 3px solid var(--border2);
+  border-top-color: var(--teal); border-radius: 50%;
+  animation: spin 1s infinite linear; margin-bottom: 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#loader p { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--teal); }
+
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<header>
+  <a href="index.html" class="brand">
+    <div class="brand-icon">S</div>
+    SEMA <span>Web Viewer</span>
+  </a>
+  <a href="index.html" class="back-btn">← Back to Site</a>
+</header>
+
+<main id="main-ui">
+  <div class="drop-zone" id="drop-zone">
+    <div class="drop-icon-wrap">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <h2>Drop any .sema file here</h2>
+    <p>Watch it think. 100% local, no server upload.</p>
+    <button class="btn" onclick="event.stopPropagation();document.getElementById('drop-input').click()">
+      <svg style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/></svg>
+      Select File
+    </button>
+    <input type="file" id="drop-input" accept=".sema,.zip">
+  </div>
+</main>
+
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Unpacking semantic layers...</p>
+</div>
+
+<div id="viewer-container">
+  <div class="viewer-header">
+    <div class="viewer-title" id="viewer-title">
+      <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/></svg>
+      <span>file.sema</span>
+    </div>
+    <button class="viewer-close" onclick="closeViewer()" title="Close Viewer">×</button>
+  </div>
+  <div id="iframe-wrapper" style="width:100%; height:calc(100% - 50px);"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('drop-input');
+const loader = document.getElementById('loader');
+const viewerContainer = document.getElementById('viewer-container');
+const iframeWrapper = document.getElementById('iframe-wrapper');
+const viewerTitle = document.querySelector('#viewer-title span');
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('over');
+  if (e.dataTransfer.files[0]) openFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) openFile(e.target.files[0]);
+});
+
+async function openFile(file) {
+  loader.style.display = 'flex';
+  viewerTitle.textContent = file.name;
+  
+  try {
+    const zip = await JSZip.loadAsync(file);
+    
+    if (zip.files['view.html']) {
+      const htmlContent = await zip.files['view.html'].async('string');
+      // Render inside an iframe
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      
+      iframeWrapper.innerHTML = `<iframe src="${url}"></iframe>`;
+      
+      setTimeout(() => {
+        loader.style.display = 'none';
+        viewerContainer.style.display = 'block';
+      }, 500);
+    } else {
+      alert("Invalid SEMA file: No built-in view.html found.");
+      loader.style.display = 'none';
+    }
+  } catch (err) {
+    alert("Error reading file: " + err.message);
+    loader.style.display = 'none';
+  }
+}
+
+function closeViewer() {
+  viewerContainer.style.display = 'none';
+  iframeWrapper.innerHTML = '';
+  fileInput.value = '';
+}
+</script>
+</body>
+</html>
