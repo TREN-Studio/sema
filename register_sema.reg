@@ -1,0 +1,69 @@
+Windows Registry Editor Version 5.00
+
+; ============================================================
+; .sema Format — Windows Registry Registration
+; TREN Studio — trenstudio.com/sema
+; 
+; INSTRUCTIONS:
+; 1. First run install_sema_windows.bat to install the opener
+; 2. Then double-click this .reg file to register the extension
+; 3. Confirm the UAC prompt
+; ============================================================
+
+; ── File Extension ──────────────────────────────────────────
+[HKEY_CLASSES_ROOT\.sema]
+@="SemaFormat.File"
+"Content Type"="application/vnd.sema"
+"PerceivedType"="document"
+
+; ── MIME Type ───────────────────────────────────────────────
+[HKEY_CLASSES_ROOT\MIME\Database\Content Type\application/vnd.sema]
+"Extension"=".sema"
+
+; ── ProgID ──────────────────────────────────────────────────
+[HKEY_CLASSES_ROOT\SemaFormat.File]
+@="Semantic File (.sema)"
+
+[HKEY_CLASSES_ROOT\SemaFormat.File\DefaultIcon]
+@="%LOCALAPPDATA%\\SemaFormat\\sema.ico"
+
+; ── Open Command ────────────────────────────────────────────
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell]
+@="open"
+
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\open]
+@="Open with .sema Viewer"
+"FriendlyAppName"=".sema Viewer by TREN Studio"
+
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\open\command]
+@="\"%LOCALAPPDATA%\\SemaFormat\\sema_launch.bat\" \"%1\""
+
+; ── Context Menu: Inspect Archive ───────────────────────────
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\inspect]
+@="Inspect .sema Archive (as ZIP)"
+"Icon"="shell32.dll,13"
+
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\inspect\command]
+@="explorer.exe \"%1\""
+
+; ── Context Menu: Open Spec ─────────────────────────────────
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\spec]
+@="Learn about .sema Format"
+"Icon"="shell32.dll,23"
+
+[HKEY_CLASSES_ROOT\SemaFormat.File\shell\spec\command]
+@="cmd.exe /c start https://trenstudio.com/sema"
+
+; ── Current User (no admin needed) ──────────────────────────
+[HKEY_CURRENT_USER\Software\Classes\.sema]
+@="SemaFormat.File"
+"Content Type"="application/vnd.sema"
+
+[HKEY_CURRENT_USER\Software\Classes\SemaFormat.File]
+@="Semantic File (.sema)"
+
+[HKEY_CURRENT_USER\Software\Classes\SemaFormat.File\DefaultIcon]
+@="%LOCALAPPDATA%\\SemaFormat\\sema.ico"
+
+[HKEY_CURRENT_USER\Software\Classes\SemaFormat.File\shell\open\command]
+@="\"%LOCALAPPDATA%\\SemaFormat\\sema_launch.bat\" \"%1\""

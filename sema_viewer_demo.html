@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>وصفة الحريرة المغربية — .sema</title>
+<style>
+  :root {
+    --bg: #0d1117; --surface: #161b22; --border: #30363d;
+    --accent: #00ff88; --text: #e6edf3; --muted: #8b949e;
+    --accent2: #7c3aed; --warn: #ff6b35;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, sans-serif; min-height:100vh; }
+  header { background:var(--surface); border-bottom:1px solid var(--border); padding:20px 24px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+  .file-info { display:flex; flex-direction:column; gap:4px; }
+  .file-title { font-size:18px; font-weight:700; }
+  .file-meta { font-size:12px; color:var(--muted); }
+  .sema-badge { background:var(--accent); color:#000; font-size:11px; font-weight:800; padding:4px 10px; letter-spacing:1px; border-radius:3px; white-space:nowrap; }
+  main { max-width:860px; margin:0 auto; padding:24px; display:grid; gap:20px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:20px; }
+  .card-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--accent); margin-bottom:12px; font-weight:700; }
+  .summary-text { font-size:15px; color:var(--text); line-height:1.7; }
+  .keywords { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .kw-tag { background:var(--bg); border:1px solid var(--border); padding:4px 10px; font-size:12px; border-radius:20px; color:var(--muted); }
+  .ask-bar { display:flex; gap:10px; }
+  #question { flex:1; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:10px 14px; font-size:14px; border-radius:4px; outline:none; }
+  #question:focus { border-color:var(--accent); }
+  #ask-btn { background:var(--accent); color:#000; font-weight:700; border:none; padding:10px 20px; cursor:pointer; border-radius:4px; font-size:14px; white-space:nowrap; }
+  #ask-btn:hover { opacity:0.85; }
+  #answer { margin-top:14px; min-height:40px; padding:12px 14px; background:var(--bg); border-radius:4px; font-size:14px; line-height:1.6; color:var(--text); display:none; }
+  #answer.show { display:block; border-left:3px solid var(--accent); }
+  .meta-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:14px; }
+  .meta-item { display:flex; flex-direction:column; gap:3px; }
+  .meta-key { font-size:10px; color:var(--muted); letter-spacing:1px; text-transform:uppercase; }
+  .meta-val { font-size:13px; font-weight:600; color:var(--text); word-break:break-all; }
+  .content-area { font-family:monospace; font-size:12px; background:var(--bg); border-radius:4px; padding:14px; max-height:260px; overflow-y:auto; color:var(--muted); line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+  .type-badge { display:inline-block; background:var(--accent2); color:#fff; font-size:10px; padding:2px 8px; border-radius:2px; letter-spacing:1px; }
+  footer { text-align:center; padding:20px; color:var(--muted); font-size:11px; border-top:1px solid var(--border); margin-top:20px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="file-info">
+    <div class="file-title">وصفة الحريرة المغربية</div>
+    <div class="file-meta">
+      <span class="type-badge">document/recipe</span>
+      &nbsp; By Larbi · TREN Studio &nbsp;·&nbsp; 2026-04-01
+    </div>
+  </div>
+  <div class="sema-badge">.sema v1.0</div>
+</header>
+
+<main>
+
+  <!-- SUMMARY -->
+  <div class="card">
+    <div class="card-label">📋 Summary</div>
+    <div class="summary-text">يُضاف العدس والحمص ويستمر الطهي 20 دقيقة. يُطهى على نار هادئة 15 دقيقة حتى يتكثف. وقت التحضير: 15 دقيقة
+وقت الطهي: 65 دقيقة
+تكفي: 6 أشخاص
+
+الحريرة حساء مغربي تقليدي يُقدم في رمضان وفي المناسبات الخاصة.</div>
+    <div class="keywords" id="keywords-container"></div>
+  </div>
+
+  <!-- ASK THE FILE -->
+  <div class="card">
+    <div class="card-label">💬 Ask This File</div>
+    <div class="ask-bar">
+      <input type="text" id="question" placeholder="Ask anything about this file..." autocomplete="off">
+      <button id="ask-btn" onclick="askFile()">Ask →</button>
+    </div>
+    <div id="answer"></div>
+  </div>
+
+  <!-- METADATA -->
+  <div class="card">
+    <div class="card-label">📌 Metadata</div>
+    <div class="meta-grid">
+      <div class="meta-item"><span class="meta-key">File</span><span class="meta-val">harira_recipe.txt</span></div>
+      <div class="meta-item"><span class="meta-key">Type</span><span class="meta-val">document/recipe</span></div>
+      <div class="meta-item"><span class="meta-key">Created</span><span class="meta-val">2026-04-01</span></div>
+      <div class="meta-item"><span class="meta-key">Author</span><span class="meta-val">Larbi</span></div>
+      <div class="meta-item"><span class="meta-key">Language</span><span class="meta-val">ar</span></div>
+      <div class="meta-item"><span class="meta-key">Sema ID</span><span class="meta-val">sema_4a18c582-2881-4...</span></div>
+    </div>
+  </div>
+
+  <!-- CONTENT PREVIEW -->
+  <div class="card">
+    <div class="card-label">📄 Content Preview</div>
+    <div class="content-area" id="preview-area">Loading preview...</div>
+  </div>
+
+</main>
+
+<footer>.sema Semantic File Format v1.0 · Built by TREN Studio · Open Standard · MIT License</footer>
+
+<script>
+const QA = [{"q": "What is this file about?", "a": "يُضاف العدس والحمص ويستمر الطهي 20 دقيقة. يُطهى على نار هادئة 15 دقيقة حتى يتكثف. وقت التحضير: 15 دقيقة\nوقت الطهي: 65 دقيقة\nتكفي: 6 أشخاص\n\nالحريرة حساء مغربي تقليدي يُقدم في رمضان وفي المناسبات الخاصة."}, {"q": "What are the main topics?", "a": "دقيقة, ملعقة, الحريرة, غرام, حفنة, صغيرة, التحضير, الطهي"}, {"q": "What kind of file is this?", "a": "This is a recipe document."}, {"q": "ما هذا الملف؟", "a": "هذا ملف وصفة طبخ."}, {"q": "ما هي الكلمات الرئيسية؟", "a": "دقيقة، ملعقة، الحريرة، غرام، حفنة، صغيرة، التحضير، الطهي"}];
+const KEYWORDS = ["دقيقة", "ملعقة", "الحريرة", "غرام", "حفنة", "صغيرة", "التحضير", "الطهي", "وصفة", "المغربية", "المقادير", "كيلو"];
+const SEARCH_TEXT = "وصفة الحريرة المغربية\n\nالمقادير:\n- نصف كيلو لحم الغنم مقطع\n- 200 غرام عدس\n- 200 غرام حمص\n- 3 طماطم ناضجة\n- حفنة كزبرة طازجة\n- حفنة بقدونس\n- ملعقة كبيرة زيت الزيتون\n- ملعقة صغيرة كركم\n- ملعقة صغيرة قرفة\n- ملح وفلفل حسب الذوق\n\nطريقة التحضير:\n1. يُغلى اللحم مع البصل والكزبرة والبقدونس في قدر ماء لمدة 30 دقيقة.\n2. يُضاف العدس والحمص ويستمر الطهي 20 دقيقة.\n3. تُضاف الطماطم المهروسة والتوابل.\n4. يُطهى على نار هادئة 15 دقيقة حتى يتكثف.\n5. تُقدم ساخنة مع عصير الليمون والتمر.\n\nوقت التحضير: 15 دقيقة\nوقت الطهي: 65 دقيقة\nتكفي: 6 أشخاص\n\nالحريرة حساء مغربي تقليدي يُقدم في رمضان وفي المناسبات الخاصة.\n";
+
+// Render keywords
+const kc = document.getElementById('keywords-container');
+KEYWORDS.forEach(kw => {
+  const span = document.createElement('span');
+  span.className = 'kw-tag';
+  span.textContent = kw;
+  kc.appendChild(span);
+});
+
+// Preview
+document.getElementById('preview-area').textContent = 
+  SEARCH_TEXT ? SEARCH_TEXT.substring(0, 800) + (SEARCH_TEXT.length > 800 ? '\n...': '') 
+              : 'No text preview available for this file type.';
+
+// Ask the file
+function askFile() {
+  const q = document.getElementById('question').value.trim();
+  if (!q) return;
+
+  const answerEl = document.getElementById('answer');
+  answerEl.className = '';
+  answerEl.textContent = '...';
+
+  // 1. Search pre-computed Q&A
+  const qLower = q.toLowerCase();
+  for (const pair of QA) {
+    const pairQ = pair.q.toLowerCase();
+    const words = qLower.split(' ').filter(w => w.length > 3);
+    const matches = words.filter(w => pairQ.includes(w));
+    if (matches.length >= 1 && matches.length / words.length > 0.4) {
+      answerEl.textContent = pair.a;
+      answerEl.className = 'show';
+      return;
+    }
+  }
+
+  // 2. Keyword search in full text
+  const searchWords = qLower.split(' ').filter(w => w.length > 3);
+  const textLower = SEARCH_TEXT.toLowerCase();
+
+  let bestSnippet = '';
+  let bestScore = 0;
+
+  const sentences = SEARCH_TEXT.split(/[.!?؟\n]/).filter(s => s.trim().length > 20);
+  for (const s of sentences) {
+    const sLower = s.toLowerCase();
+    const score = searchWords.filter(w => sLower.includes(w)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestSnippet = s.trim();
+    }
+  }
+
+  if (bestSnippet && bestScore > 0) {
+    answerEl.textContent = bestSnippet;
+  } else {
+    answerEl.textContent = "I couldn't find a specific answer. Try rephrasing your question or check the content preview above.";
+  }
+  answerEl.className = 'show';
+}
+
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter') askFile();
+});
+</script>
+</body>
+</html>

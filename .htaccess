@@ -1,0 +1,25 @@
+# 1. الأمان — يمنع عرض محتوى المجلد ويحمي الملفات الحساسة
+Options -Indexes
+
+# 2. MIME Type — يُعرّف السيرفر بصيغة .sema رسمياً
+AddType application/vnd.sema .sema
+AddType text/html .html
+
+# 3. التنزيل — ملفات .sema و .py تُنزَّل تلقائياً بدل فتحها 
+<FilesMatch "\.(sema|py)$">
+    ForceType application/octet-stream
+    Header set Content-Disposition attachment
+</FilesMatch>
+
+# 4. HTTPS — يُجبر كل زيارة على HTTPS تلقائياً
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# 5. Cache — ملفات .sema تُخزَّن شهراً كاملاً في المتصفح للسرعة
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType application/vnd.sema "access plus 1 month"
+</IfModule>

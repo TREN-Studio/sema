@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.sema Format Specification v1.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #111118;
+    --border: #1e1e2e;
+    --accent: #00ff88;
+    --accent2: #7c3aed;
+    --accent3: #ff6b35;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --code-bg: #0d1117;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grain texture */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.4;
+  }
+
+  header {
+    padding: 80px 40px 60px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '.sema';
+    position: absolute;
+    right: -20px;
+    top: -10px;
+    font-size: 180px;
+    font-weight: 800;
+    color: #ffffff04;
+    font-family: 'Space Mono', monospace;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    margin-bottom: 24px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-size: clamp(36px, 6vw, 72px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+
+  h1 span.accent { color: var(--accent); }
+  h1 span.dim { color: var(--muted); }
+
+  .subtitle {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 560px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 32px;
+    margin-top: 40px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--accent);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
+
+  section {
+    padding: 60px 40px;
+    border-bottom: 1px solid var(--border);
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .section-number {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--accent3);
+    margin: 32px 0 12px;
+    font-family: 'Space Mono', monospace;
+    letter-spacing: 1px;
+  }
+
+  p {
+    color: #94a3b8;
+    margin-bottom: 16px;
+    font-size: 15px;
+  }
+
+  strong { color: var(--text); }
+
+  /* Philosophy boxes */
+  .philosophy {
+    border-left: 3px solid var(--accent);
+    padding: 20px 24px;
+    background: #00ff8808;
+    margin: 24px 0;
+    font-size: 15px;
+    color: var(--text);
+    font-style: italic;
+  }
+
+  /* File structure visual */
+  .file-tree {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 28px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .file-tree::before {
+    content: 'file structure';
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .ft-root { color: var(--accent); font-weight: 700; }
+  .ft-dir { color: #7c3aed; }
+  .ft-file { color: #94a3b8; }
+  .ft-comment { color: var(--muted); }
+  .ft-required { color: var(--accent3); }
+
+  /* JSON example */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 28px;
+    overflow-x: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+
+  .kw { color: var(--accent2); }
+  .str { color: var(--accent); }
+  .num { color: var(--accent3); }
+  .key { color: #7dd3fc; }
+  .cm { color: var(--muted); font-style: italic; }
+
+  /* Layer cards */
+  .layers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .layer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .layer-card:hover { border-color: var(--accent); }
+
+  .layer-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: #ffffff06;
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    line-height: 1;
+  }
+
+  .layer-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: 'Space Mono', monospace;
+    margin-bottom: 8px;
+  }
+
+  .layer-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Comparison table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    background: var(--surface);
+    color: var(--accent);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+  }
+
+  td {
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    color: #94a3b8;
+    vertical-align: top;
+  }
+
+  td:first-child { color: var(--text); font-weight: 600; }
+  .yes { color: var(--accent); }
+  .no { color: #ef4444; }
+  .partial { color: var(--accent3); }
+
+  /* Use cases */
+  .use-cases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+
+  .use-case {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+
+  .use-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+
+  .use-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .use-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* Version timeline */
+  .timeline {
+    position: relative;
+    padding-left: 24px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    bottom: 8px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding: 0 0 32px 24px;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+
+  .timeline-item.active::before { background: var(--accent); }
+
+  .tl-version {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  .tl-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 6px;
+  }
+
+  .tl-desc {
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  footer {
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    border-top: 1px solid var(--border);
+  }
+
+  footer span { color: var(--accent); }
+
+  @media (max-width: 600px) {
+    header, section { padding: 40px 20px; }
+    h1 { font-size: 36px; }
+    .meta-row { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="badge">Official Specification</div>
+  <h1>
+    <span class="accent">.sema</span><br>
+    <span class="dim">Semantic File</span><br>
+    Format
+  </h1>
+  <p class="subtitle">A new open standard for intelligent, self-describing, context-aware files that carry their own meaning.</p>
+  <div class="meta-row">
+    <div class="meta-item">
+      <span class="meta-label">Version</span>
+      <span class="meta-value">1.0.0-draft</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Status</span>
+      <span class="meta-value">ACTIVE DRAFT</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Authors</span>
+      <span class="meta-value">Larbi + Claude</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">License</span>
+      <span class="meta-value">MIT OPEN</span>
+    </div>
+    <div class="meta-item">
+      <span class="meta-label">Extension</span>
+      <span class="meta-value">.sema</span>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION 1: PHILOSOPHY -->
+<section>
+  <div class="section-number">§ 01</div>
+  <h2>Philosophy & Problem Statement</h2>
+
+  <p>Every file format created since 1970 shares a fundamental flaw: <strong>files are dumb containers.</strong> A PDF does not know it is a contract. A JPG does not know it is a medical scan. An MP3 does not know it is a song about grief.</p>
+
+  <p>Files rely entirely on external applications to give them meaning. Remove the application, and the file becomes meaningless bytes. This dependency creates fragility, lock-in, and a permanent loss of context over time.</p>
+
+  <div class="philosophy">
+    "The file should carry its own soul. It should know what it is, what it means, and how to present itself — to anyone, anywhere, forever."
+  </div>
+
+  <p><strong>.sema</strong> (from <em>Semantic</em>) is a new file format that embeds intelligence, context, and a self-rendering interface directly inside the file itself. No external application required. No API calls. No internet dependency.</p>
+
+  <p>A <code>.sema</code> file opens in any browser and <strong>understands itself.</strong></p>
+</section>
+
+<!-- SECTION 2: STRUCTURE -->
+<section>
+  <div class="section-number">§ 02</div>
+  <h2>File Structure</h2>
+
+  <p>A <code>.sema</code> file is a <strong>ZIP archive</strong> with a defined internal structure. ZIP was chosen for maximum compatibility, compression, and toolchain availability across all platforms.</p>
+
+  <div class="file-tree">
+    <div><span class="ft-root">archive.sema</span>  <span class="ft-comment">← renamed .zip</span></div>
+    <div>├── <span class="ft-required">sema.json</span>         <span class="ft-comment">← REQUIRED: manifest + metadata</span></div>
+    <div>├── <span class="ft-required">view.html</span>         <span class="ft-comment">← REQUIRED: self-rendering interface</span></div>
+    <div>├── <span class="ft-required">brain.json</span>        <span class="ft-comment">← REQUIRED: semantic understanding</span></div>
+    <div>├── <span class="ft-dir">content/</span>              <span class="ft-comment">← REQUIRED: original file(s)</span></div>
+    <div>│   └── <span class="ft-file">original.*</span>        <span class="ft-comment">← any format</span></div>
+    <div>├── <span class="ft-dir">assets/</span>               <span class="ft-comment">← optional: images, fonts</span></div>
+    <div>│   └── <span class="ft-file">thumb.webp</span>        <span class="ft-comment">← thumbnail preview</span></div>
+    <div>└── <span class="ft-dir">layers/</span>               <span class="ft-comment">← optional: extracted data layers</span></div>
+    <div>    ├── <span class="ft-file">text.txt</span>          <span class="ft-comment">← plain text extraction</span></div>
+    <div>    └── <span class="ft-file">structured.json</span>   <span class="ft-comment">← parsed structured data</span></div>
+  </div>
+
+  <h3>// Compression Rules</h3>
+  <p>All text files (JSON, HTML) must use DEFLATE compression level 6. Binary content files may use STORE (level 0) if already compressed (JPEG, MP4, etc.). Total uncompressed size limit for v1.0: <strong>500 MB.</strong></p>
+</section>
+
+<!-- SECTION 3: LAYERS -->
+<section>
+  <div class="section-number">§ 03</div>
+  <h2>The Four Layers</h2>
+
+  <p>Every <code>.sema</code> file is built from four conceptual layers. The first three are mandatory.</p>
+
+  <div class="layers">
+    <div class="layer-card">
+      <div class="layer-num">1</div>
+      <div class="layer-name">Content</div>
+      <div class="layer-desc">The original file in its native format. Untouched, unmodified. The source of truth.</div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">2</div>
+      <div class="layer-name">Manifest</div>
+      <div class="layer-desc">Structured metadata in <code>sema.json</code>. Describes what the file is, who made it, when, and why.</div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">3</div>
+      <div class="layer-name">Brain</div>
+      <div class="layer-desc">Pre-computed semantic understanding in <code>brain.json</code>. Keywords, entities, summary, relationships — generated at creation time, not at open time.</div>
+    </div>
+    <div class="layer-card">
+      <div class="layer-num">4</div>
+      <div class="layer-name">View</div>
+      <div class="layer-desc">A complete self-contained HTML+JS interface in <code>view.html</code>. Opens in any browser. No installation. No internet.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4: sema.json -->
+<section>
+  <div class="section-number">§ 04</div>
+  <h2>sema.json — The Manifest</h2>
+
+  <p>The manifest is the identity card of the file. It must be valid JSON and must include all required fields.</p>
+
+<pre><span class="cm">// sema.json — Full specification</span>
+{
+  <span class="cm">// ── REQUIRED FIELDS ─────────────────────────────</span>
+
+  <span class="key">"sema_version"</span>: <span class="str">"1.0.0"</span>,          <span class="cm">// spec version used</span>
+  <span class="key">"id"</span>: <span class="str">"sema_[uuid-v4]"</span>,           <span class="cm">// globally unique identifier</span>
+  <span class="key">"created_at"</span>: <span class="str">"2025-01-01T00:00:00Z"</span>, <span class="cm">// ISO 8601</span>
+  <span class="key">"content_type"</span>: <span class="str">"document/recipe"</span>,  <span class="cm">// category/subcategory</span>
+  <span class="key">"mime_type"</span>: <span class="str">"application/pdf"</span>,    <span class="cm">// original file MIME</span>
+  <span class="key">"filename"</span>: <span class="str">"harira-recipe.pdf"</span>,  <span class="cm">// original filename</span>
+  <span class="key">"lang"</span>: <span class="str">"ar"</span>,                     <span class="cm">// ISO 639-1 language code</span>
+
+  <span class="cm">// ── AUTHOR ───────────────────────────────────────</span>
+  <span class="key">"author"</span>: {
+    <span class="key">"name"</span>: <span class="str">"Larbi"</span>,
+    <span class="key">"org"</span>: <span class="str">"TREN Studio"</span>,
+    <span class="key">"contact"</span>: <span class="str">"optional"</span>
+  },
+
+  <span class="cm">// ── CONTENT DESCRIPTION ──────────────────────────</span>
+  <span class="key">"title"</span>: <span class="str">"وصفة الحريرة المغربية"</span>,
+  <span class="key">"description"</span>: <span class="str">"short human-readable description"</span>,
+  <span class="key">"tags"</span>: [<span class="str">"recipe"</span>, <span class="str">"moroccan"</span>, <span class="str">"soup"</span>],
+
+  <span class="cm">// ── TECHNICAL ────────────────────────────────────</span>
+  <span class="key">"checksum"</span>: {
+    <span class="key">"algo"</span>: <span class="str">"sha256"</span>,
+    <span class="key">"value"</span>: <span class="str">"[hash of content/original.*]"</span>
+  },
+  <span class="key">"content_size_bytes"</span>: <span class="num">204800</span>,
+
+  <span class="cm">// ── OPTIONAL FIELDS ──────────────────────────────</span>
+  <span class="key">"expires_at"</span>: <span class="kw">null</span>,              <span class="cm">// null = never</span>
+  <span class="key">"geo"</span>: {
+    <span class="key">"country"</span>: <span class="str">"MA"</span>,
+    <span class="key">"region"</span>: <span class="str">"optional"</span>
+  },
+  <span class="key">"relations"</span>: [
+    { <span class="key">"type"</span>: <span class="str">"derived_from"</span>, <span class="key">"id"</span>: <span class="str">"sema_[other-id]"</span> }
+  ],
+  <span class="key">"custom"</span>: {}                      <span class="cm">// app-specific extra data</span>
+}</pre>
+</section>
+
+<!-- SECTION 5: brain.json -->
+<section>
+  <div class="section-number">§ 05</div>
+  <h2>brain.json — Semantic Intelligence</h2>
+
+  <p>The brain is the soul of <code>.sema</code>. It is computed <strong>once at creation time</strong> and stored permanently inside the file. It requires no API, no internet, and no processing at open time.</p>
+
+  <p>This is the key innovation: <strong>intelligence is pre-baked, not live-computed.</strong></p>
+
+<pre><span class="cm">// brain.json — Semantic understanding layer</span>
+{
+  <span class="key">"brain_version"</span>: <span class="str">"1.0"</span>,
+  <span class="key">"generated_at"</span>: <span class="str">"2025-01-01T00:00:00Z"</span>,
+  <span class="key">"generator"</span>: <span class="str">"sema-builder-cli/1.0"</span>,
+
+  <span class="cm">// ── SEMANTIC CORE ────────────────────────────────</span>
+  <span class="key">"summary"</span>: <span class="str">"2-3 sentence plain-language summary"</span>,
+  <span class="key">"keywords"</span>: [<span class="str">"keyword1"</span>, <span class="str">"keyword2"</span>],    <span class="cm">// top 10-20</span>
+  <span class="key">"entities"</span>: {
+    <span class="key">"people"</span>: [],
+    <span class="key">"places"</span>: [<span class="str">"Morocco"</span>, <span class="str">"Marrakech"</span>],
+    <span class="key">"concepts"</span>: [<span class="str">"nutrition"</span>, <span class="str">"traditional food"</span>],
+    <span class="key">"dates"</span>: []
+  },
+  <span class="key">"topics"</span>: [<span class="str">"food"</span>, <span class="str">"culture"</span>, <span class="str">"health"</span>],
+
+  <span class="cm">// ── CONTENT-TYPE SPECIFIC ────────────────────────</span>
+  <span class="key">"content_data"</span>: {
+    <span class="cm">// Varies by content_type. Examples:</span>
+    <span class="cm">// recipe → { ingredients, steps, time, calories }</span>
+    <span class="cm">// invoice → { total, currency, items, due_date }</span>
+    <span class="cm">// image  → { objects, colors, scene, faces_count }</span>
+    <span class="cm">// doc    → { word_count, reading_time, headings }</span>
+  },
+
+  <span class="cm">// ── SEARCHABILITY ────────────────────────────────</span>
+  <span class="key">"search_text"</span>: <span class="str">"full extracted plain text for local search"</span>,
+  <span class="key">"questions"</span>: [
+    <span class="cm">// Pre-answered Q&A pairs for instant response</span>
+    { <span class="key">"q"</span>: <span class="str">"What is this file about?"</span>, <span class="key">"a"</span>: <span class="str">"..."</span> },
+    { <span class="key">"q"</span>: <span class="str">"Who created this?"</span>, <span class="key">"a"</span>: <span class="str">"..."</span> }
+  ],
+
+  <span class="cm">// ── ACCESSIBILITY ────────────────────────────────</span>
+  <span class="key">"alt_text"</span>: <span class="str">"description for screen readers"</span>,
+  <span class="key">"translations"</span>: {
+    <span class="key">"summary_ar"</span>: <span class="str">"ملخص بالعربية"</span>,
+    <span class="key">"summary_fr"</span>: <span class="str">"résumé en français"</span>
+  }
+}</pre>
+
+  <h3>// The Q&A Engine</h3>
+  <p>The <code>questions</code> array is the interaction layer. When a user types a question to the file, the viewer first searches this pre-computed array for a close match. If found, it answers <strong>instantly from local data.</strong> If not found, it falls back to keyword search within <code>search_text</code>. <strong>Zero API calls. Zero latency.</strong></p>
+</section>
+
+<!-- SECTION 6: view.html -->
+<section>
+  <div class="section-number">§ 06</div>
+  <h2>view.html — The Self-Rendering Interface</h2>
+
+  <p><code>view.html</code> is a complete, self-contained web application embedded inside the file. It is served locally by the <code>.sema</code> viewer or extracted and opened directly by any browser.</p>
+
+  <h3>// Mandatory UI Elements</h3>
+  <p>Every <code>view.html</code> must include:</p>
+  <ul style="color: #94a3b8; padding-left: 20px; font-size: 14px; line-height: 2.2; margin-bottom: 16px;">
+    <li><strong style="color: var(--text);">Header bar</strong> — title, author, creation date, file type badge</li>
+    <li><strong style="color: var(--text);">Content area</strong> — renders the original content appropriately</li>
+    <li><strong style="color: var(--text);">Ask bar</strong> — text input to query the file (uses brain.json)</li>
+    <li><strong style="color: var(--text);">Summary panel</strong> — auto-shows the brain.json summary</li>
+    <li><strong style="color: var(--text);">Download button</strong> — allows extraction of original content</li>
+    <li><strong style="color: var(--text);">.sema badge</strong> — identifies the format with spec version</li>
+  </ul>
+
+  <h3>// Technical Constraints</h3>
+  <p>The <code>view.html</code> must be completely self-contained: all CSS and JS inlined, no external CDN dependencies, no fetch() calls to external URLs. Maximum file size: <strong>2 MB uncompressed.</strong> Must render correctly in Chrome, Firefox, Safari, and Edge without plugins.</p>
+</section>
+
+<!-- SECTION 7: CONTENT TYPES -->
+<section>
+  <div class="section-number">§ 07</div>
+  <h2>Content Type Registry</h2>
+
+  <p>The <code>content_type</code> field uses a <code>category/subcategory</code> format. The following are the v1.0 registered types:</p>
+
+  <table>
+    <tr>
+      <th>Content Type</th>
+      <th>Description</th>
+      <th>Key brain.json fields</th>
+    </tr>
+    <tr><td>document/generic</td><td>Any general document</td><td>word_count, reading_time, headings</td></tr>
+    <tr><td>document/recipe</td><td>Food recipe</td><td>ingredients, steps, calories, cook_time</td></tr>
+    <tr><td>document/invoice</td><td>Financial invoice</td><td>total, currency, items, due_date</td></tr>
+    <tr><td>document/contract</td><td>Legal contract</td><td>parties, clauses, dates, obligations</td></tr>
+    <tr><td>image/photo</td><td>Photograph</td><td>objects, scene, colors, location</td></tr>
+    <tr><td>image/medical</td><td>Medical imaging</td><td>modality, body_part, notes</td></tr>
+    <tr><td>image/diagram</td><td>Technical diagram</td><td>type, components, relationships</td></tr>
+    <tr><td>data/spreadsheet</td><td>Tabular data</td><td>rows, columns, summary_stats</td></tr>
+    <tr><td>data/dataset</td><td>Research dataset</td><td>variables, records, methodology</td></tr>
+    <tr><td>media/audio</td><td>Audio file</td><td>duration, transcript, speakers</td></tr>
+    <tr><td>media/video</td><td>Video file</td><td>duration, scenes, transcript</td></tr>
+    <tr><td>custom/[name]</td><td>App-specific type</td><td>defined by application</td></tr>
+  </table>
+</section>
+
+<!-- SECTION 8: COMPARISON -->
+<section>
+  <div class="section-number">§ 08</div>
+  <h2>Format Comparison</h2>
+
+  <table>
+    <tr>
+      <th>Capability</th>
+      <th>PDF</th>
+      <th>JPG/PNG</th>
+      <th>HTML</th>
+      <th>.sema</th>
+    </tr>
+    <tr>
+      <td>Self-rendering</td>
+      <td class="partial">Partial</td>
+      <td class="no">✗</td>
+      <td class="yes">✓</td>
+      <td class="yes">✓</td>
+    </tr>
+    <tr>
+      <td>No app needed</td>
+      <td class="no">✗</td>
+      <td class="no">✗</td>
+      <td class="yes">✓</td>
+      <td class="yes">✓</td>
+    </tr>
+    <tr>
+      <td>Semantic metadata</td>
+      <td class="partial">Limited</td>
+      <td class="no">✗</td>
+      <td class="no">✗</td>
+      <td class="yes">✓ Rich</td>
+    </tr>
+    <tr>
+      <td>Queryable</td>
+      <td class="no">✗</td>
+      <td class="no">✗</td>
+      <td class="no">✗</td>
+      <td class="yes">✓</td>
+    </tr>
+    <tr>
+      <td>Original preserved</td>
+      <td class="yes">✓</td>
+      <td class="yes">✓</td>
+      <td class="no">✗</td>
+      <td class="yes">✓</td>
+    </tr>
+    <tr>
+      <td>No internet required</td>
+      <td class="yes">✓</td>
+      <td class="yes">✓</td>
+      <td class="partial">Partial</td>
+      <td class="yes">✓ Always</td>
+    </tr>
+    <tr>
+      <td>Multilingual built-in</td>
+      <td class="no">✗</td>
+      <td class="no">✗</td>
+      <td class="partial">Manual</td>
+      <td class="yes">✓</td>
+    </tr>
+    <tr>
+      <td>Human + machine readable</td>
+      <td class="partial">Partial</td>
+      <td class="no">✗</td>
+      <td class="partial">Partial</td>
+      <td class="yes">✓ Both</td>
+    </tr>
+  </table>
+</section>
+
+<!-- SECTION 9: USE CASES -->
+<section>
+  <div class="section-number">§ 09</div>
+  <h2>Use Cases</h2>
+
+  <div class="use-cases">
+    <div class="use-case">
+      <div class="use-icon">🍽️</div>
+      <div class="use-title">Recipe Files (FoodJot)</div>
+      <div class="use-desc">Each recipe becomes a .sema file. Ask it about calories, substitutions, or steps. Embed in any site. Works forever.</div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">🏥</div>
+      <div class="use-title">Medical Records</div>
+      <div class="use-desc">Patient sends a scan .sema to a specialist across the world. Doctor opens it in a browser. No DICOM viewer needed.</div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">📜</div>
+      <div class="use-title">Legal Contracts</div>
+      <div class="use-desc">Ask the contract: "What is the penalty clause?" Get an instant answer from the embedded brain.</div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">🎓</div>
+      <div class="use-title">Academic Papers</div>
+      <div class="use-desc">Research papers that explain themselves. Ask: "What is the main finding?" — answered instantly, offline.</div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">📦</div>
+      <div class="use-title">Product Catalogs</div>
+      <div class="use-desc">An Amazon product review as .sema. Includes specs, pros/cons, affiliate links — all self-contained.</div>
+    </div>
+    <div class="use-case">
+      <div class="use-icon">🗺️</div>
+      <div class="use-title">Cultural Preservation</div>
+      <div class="use-desc">Archive Moroccan heritage documents with full semantic context in Arabic, French, and Amazigh — forever.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 10: ROADMAP -->
+<section>
+  <div class="section-number">§ 10</div>
+  <h2>Development Roadmap</h2>
+
+  <div class="timeline">
+    <div class="timeline-item active">
+      <div class="tl-version">v1.0 — NOW</div>
+      <div class="tl-title">Foundation</div>
+      <div class="tl-desc">Core spec, sema.json schema, brain.json schema, basic view.html, CLI builder tool, browser viewer.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-version">v1.1</div>
+      <div class="tl-title">Builder Tools</div>
+      <div class="tl-desc">Web-based .sema creator, drag & drop interface, Python and JS SDKs, WordPress plugin for FoodJot.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-version">v1.2</div>
+      <div class="tl-title">Ecosystem</div>
+      <div class="tl-desc">VSCode extension, .sema registry (index of public files), search engine for .sema files, API for builders.</div>
+    </div>
+    <div class="timeline-item">
+      <div class="tl-version">v2.0</div>
+      <div class="tl-title">Intelligence Upgrade</div>
+      <div class="tl-desc">Optional embedded micro-model (Transformers.js), versioned files, digital signatures, encrypted .sema.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p><span>.sema</span> Specification v1.0.0-draft &nbsp;·&nbsp; Authors: <span>Larbi & Claude</span> &nbsp;·&nbsp; License: MIT Open &nbsp;·&nbsp; Built at TREN Studio</p>
+  <p style="margin-top: 8px; font-size: 10px;">The future of files is semantic. The file must carry its own soul.</p>
+</footer>
+
+</body>
+</html>

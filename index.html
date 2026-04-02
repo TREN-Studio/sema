@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>.sema — The File Format That Understands Itself</title>
+<meta name="description" content="A new open file format where every file carries its own intelligence. No API. No internet. Pure semantic power. Built by TREN Studio.">
+<meta property="og:title" content=".sema — Files That Think">
+<meta property="og:description" content="We are changing the history of files. Forever.">
+<meta property="og:url" content="https://trenstudio.com/sema">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & ROOT ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --ink: #050507;
+  --paper: #f4f1eb;
+  --paper2: #ede9e0;
+  --accent: #e8ff00;
+  --accent-dark: #c8df00;
+  --red: #ff2d2d;
+  --muted: #888070;
+  --border: #d4cfc3;
+  --dark: #0f0e0c;
+  --mono: 'IBM Plex Mono', monospace;
+  --display: 'Bebas Neue', sans-serif;
+  --body: 'Fraunces', serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s, width 0.2s, height 0.2s, background 0.2s;
+  mix-blend-mode: multiply;
+}
+#cursor.big { width: 48px; height: 48px; }
+a, button { cursor: none; }
+
+/* ── GRAIN ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9998;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 100;
+  padding: 18px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--paper);
+  border-bottom: 1px solid var(--border);
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.nav-logo span { color: var(--muted); }
+.nav-links { display: flex; gap: 32px; align-items: center; }
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: var(--muted);
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-badge {
+  background: var(--ink);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 14px;
+  letter-spacing: 1px;
+}
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 120px 40px 60px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--display);
+  font-size: clamp(200px, 35vw, 520px);
+  color: transparent;
+  -webkit-text-stroke: 1px var(--border);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -10px;
+  animation: bgFloat 8s ease-in-out infinite;
+}
+@keyframes bgFloat {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -52%) scale(1.01); }
+}
+
+.hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: auto;
+  padding-top: 40px;
+}
+
+.hero-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 6px 14px;
+  animation: fadeIn 0.8s ease both;
+}
+
+.hero-date {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 2px;
+  animation: fadeIn 0.8s 0.1s ease both;
+}
+
+.hero-main {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-h1 {
+  font-family: var(--display);
+  font-size: clamp(80px, 18vw, 280px);
+  line-height: 0.88;
+  letter-spacing: -3px;
+  animation: slideUp 0.9s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-h1 .line2 {
+  display: block;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--ink);
+}
+
+.hero-h1 .line3 {
+  display: block;
+  background: var(--accent);
+  display: inline-block;
+  padding: 0 16px;
+  transform: skewX(-2deg);
+}
+
+.hero-sub {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 40px;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.hero-desc {
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 300;
+  font-style: italic;
+  max-width: 500px;
+  line-height: 1.5;
+  color: #333;
+  animation: slideUp 0.9s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.hero-cta-group {
+  display: flex; gap: 12px; align-items: center;
+  animation: slideUp 0.9s 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.btn-primary {
+  background: var(--ink);
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 14px 28px;
+  text-decoration: none;
+  letter-spacing: 1px;
+  display: inline-flex; align-items: center; gap: 8px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  border: none;
+}
+.btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--accent); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 14px 24px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  letter-spacing: 1px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-secondary:hover { background: var(--paper2); border-color: var(--ink); }
+
+/* ── TICKER ── */
+.ticker-wrap {
+  background: var(--ink);
+  color: var(--accent);
+  padding: 12px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.ticker-inner {
+  display: inline-block;
+  animation: ticker 30s linear infinite;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.ticker-inner span { margin: 0 40px; opacity: 0.4; }
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── SECTION BASE ── */
+section { padding: 100px 40px; }
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before {
+  content: '';
+  display: block;
+  width: 32px; height: 1px;
+  background: var(--muted);
+}
+
+/* ── PROBLEM SECTION ── */
+.problem { background: var(--dark); color: var(--paper); }
+.problem .section-label { color: #666; }
+.problem .section-label::before { background: #666; }
+
+.problem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 60px;
+}
+
+.problem-statement {
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--paper);
+}
+
+.problem-statement em {
+  font-style: normal;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.problem-list { list-style: none; }
+.problem-list li {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid #222;
+  font-family: var(--mono);
+  font-size: 13px;
+  color: #999;
+  line-height: 1.6;
+}
+.problem-list li:last-child { border-bottom: none; }
+.problem-num {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 700;
+  min-width: 24px;
+  margin-top: 2px;
+}
+
+/* ── SOLUTION SECTION ── */
+.solution {
+  background: var(--paper);
+  border-top: 1px solid var(--border);
+}
+
+.solution-headline {
+  font-family: var(--display);
+  font-size: clamp(56px, 10vw, 140px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  margin: 40px 0 60px;
+}
+
+.solution-headline .hl {
+  background: var(--accent);
+  padding: 0 12px;
+}
+
+.layers-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  margin-top: 60px;
+}
+
+.layer {
+  padding: 36px 28px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.layer:last-child { border-right: none; }
+.layer:hover { background: var(--paper2); }
+
+.layer-n {
+  font-family: var(--display);
+  font-size: 72px;
+  color: var(--border);
+  line-height: 1;
+  margin-bottom: 20px;
+  transition: color 0.3s;
+}
+.layer:hover .layer-n { color: var(--ink); }
+
+.layer-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+
+.layer-file {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.layer-desc {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  font-style: italic;
+}
+
+/* ── LIVE DEMO ── */
+.demo-section {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 100px 40px;
+}
+
+.demo-section .section-label { color: #555; }
+.demo-section .section-label::before { background: #555; }
+
+.demo-title {
+  font-family: var(--display);
+  font-size: clamp(40px, 7vw, 100px);
+  line-height: 0.95;
+  letter-spacing: -1px;
+  margin: 32px 0 48px;
+}
+.demo-title .ac { color: var(--accent); }
+
+.demo-container {
+  display: grid;
+  grid-template-columns: 1fr 60px 1fr;
+  gap: 0;
+  align-items: center;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.demo-box {
+  background: #111;
+  border: 1px solid #222;
+  padding: 32px;
+  min-height: 280px;
+}
+
+.demo-box-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+.demo-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 28px;
+  color: var(--accent);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Drop Zone */
+#drop-zone {
+  border: 2px dashed #333;
+  padding: 40px 20px;
+  text-align: center;
+  transition: border-color 0.2s, background 0.2s;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+#drop-zone.dragover { border-color: var(--accent); background: #0a0a00; }
+#drop-zone.has-file { border-color: var(--accent); border-style: solid; }
+
+.dz-icon { font-size: 36px; opacity: 0.4; }
+.dz-text { font-family: var(--mono); font-size: 13px; color: #666; line-height: 1.6; }
+.dz-name { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 700; }
+
+/* Output */
+#output-box { display: flex; flex-direction: column; gap: 0; min-height: 200px; }
+.out-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1a1a1a;
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.out-row.show { opacity: 1; transform: translateX(0); }
+.out-row:last-child { border-bottom: none; }
+.out-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.out-file { font-family: var(--mono); font-size: 12px; color: #888; flex: 1; }
+.out-size { font-family: var(--mono); font-size: 11px; color: #555; }
+.out-status { font-size: 12px; }
+
+.demo-process-btn {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  background: var(--accent);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 14px;
+  border: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: opacity 0.2s;
+  display: none;
+}
+.demo-process-btn:hover { opacity: 0.85; }
+.demo-process-btn.visible { display: block; }
+
+/* ── COMPARISON ── */
+.comparison-section {
+  background: var(--paper);
+  border-top: 1px solid var(--border);
+}
+
+.comparison-section h2 {
+  font-family: var(--display);
+  font-size: clamp(48px, 8vw, 120px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  margin: 32px 0 60px;
+}
+
+.comp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+
+.comp-table th {
+  text-align: left;
+  padding: 14px 20px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  border-right: 1px solid #333;
+}
+.comp-table th:last-child { border-right: none; background: var(--accent); color: var(--ink); }
+.comp-table td {
+  padding: 14px 20px;
+  border: 1px solid var(--border);
+  color: #666;
+  vertical-align: middle;
+}
+.comp-table td:first-child { color: var(--ink); font-weight: 500; }
+.comp-table td:last-child { background: #f9f7f0; font-weight: 700; color: var(--ink); }
+.comp-table tr:hover td { background: var(--paper2); }
+.comp-table tr:hover td:last-child { background: #f0f0d0; }
+.y { color: #22c55e; }
+.n { color: #ef4444; }
+.p { color: #f59e0b; }
+
+/* ── MANIFESTO SECTION ── */
+.manifesto {
+  background: var(--dark);
+  color: var(--paper);
+  padding: 120px 40px;
+  text-align: center;
+}
+
+.manifesto-text {
+  font-size: clamp(24px, 4vw, 52px);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.4;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.manifesto-text strong {
+  font-style: normal;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.manifesto-sub {
+  margin-top: 40px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #555;
+  text-transform: uppercase;
+}
+
+/* ── DOWNLOAD ── */
+.download-section {
+  padding: 100px 40px;
+  background: var(--accent);
+}
+
+.download-section .section-label { color: #666; }
+.download-section .section-label::before { background: #666; }
+
+.dl-headline {
+  font-family: var(--display);
+  font-size: clamp(56px, 10vw, 140px);
+  line-height: 0.9;
+  letter-spacing: -2px;
+  color: var(--ink);
+  margin: 32px 0 48px;
+}
+
+.dl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2px;
+  margin-top: 40px;
+}
+
+.dl-card {
+  background: #d4e800;
+  padding: 36px;
+  transition: background 0.2s;
+}
+.dl-card:hover { background: var(--ink); color: var(--accent); }
+.dl-card:hover .dl-card-title { color: var(--accent); }
+.dl-card:hover .dl-card-desc { color: #888; }
+.dl-card:hover .dl-card-link { color: var(--accent); }
+
+.dl-card-type {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #888;
+  margin-bottom: 12px;
+}
+
+.dl-card-title {
+  font-family: var(--display);
+  font-size: 36px;
+  color: var(--ink);
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.dl-card-desc {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.6;
+  font-style: italic;
+  transition: color 0.2s;
+}
+
+.dl-card-link {
+  display: inline-block;
+  margin-top: 20px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: none;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+
+/* ── FOOTER ── */
+footer {
+  background: var(--ink);
+  color: #444;
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+footer a { color: #666; text-decoration: none; }
+footer a:hover { color: var(--accent); }
+.footer-logo { color: var(--paper); font-weight: 700; }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  nav { padding: 16px 20px; }
+  .nav-links { display: none; }
+  .hero, section, .demo-section, .manifesto, .download-section { padding: 80px 20px 60px; }
+  .problem-grid { grid-template-columns: 1fr; gap: 40px; }
+  .layers-grid { grid-template-columns: 1fr 1fr; }
+  .demo-container { grid-template-columns: 1fr; }
+  .demo-arrow { transform: rotate(90deg); }
+  footer { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div id="cursor"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="https://trenstudio.com" class="nav-logo">TREN<span>studio</span></a>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#solution">Format</a>
+    <a href="#demo">Demo</a>
+    <a href="#download">Download</a>
+    <a href="https://trenstudio.com" class="nav-badge">.sema v1.0</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-text">.sema</div>
+
+  <div class="hero-top">
+    <div class="hero-tag">Open Format — April 2025</div>
+    <div class="hero-date">EST. TREN Studio · Morocco</div>
+  </div>
+
+  <div class="hero-main">
+    <h1 class="hero-h1">
+      The File<br>
+      <span class="line2">That Knows</span><br>
+      <span class="line3">Itself.</span>
+    </h1>
+
+    <div class="hero-sub">
+      <p class="hero-desc">
+        Every file ever created is a dumb container. It knows nothing about itself. We changed that — forever.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#demo" class="btn-primary">Try The Demo →</a>
+        <a href="#download" class="btn-secondary">Get Builder</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-inner">
+    FILES THAT THINK &nbsp;<span>✦</span>&nbsp;
+    NO API REQUIRED &nbsp;<span>✦</span>&nbsp;
+    OPEN STANDARD &nbsp;<span>✦</span>&nbsp;
+    ZERO LATENCY &nbsp;<span>✦</span>&nbsp;
+    SELF-DESCRIBING &nbsp;<span>✦</span>&nbsp;
+    MIT LICENSE &nbsp;<span>✦</span>&nbsp;
+    BUILT IN MOROCCO &nbsp;<span>✦</span>&nbsp;
+    THE FUTURE IS SEMANTIC &nbsp;<span>✦</span>&nbsp;
+    FILES THAT THINK &nbsp;<span>✦</span>&nbsp;
+    NO API REQUIRED &nbsp;<span>✦</span>&nbsp;
+    OPEN STANDARD &nbsp;<span>✦</span>&nbsp;
+    ZERO LATENCY &nbsp;<span>✦</span>&nbsp;
+    SELF-DESCRIBING &nbsp;<span>✦</span>&nbsp;
+    MIT LICENSE &nbsp;<span>✦</span>&nbsp;
+    BUILT IN MOROCCO &nbsp;<span>✦</span>&nbsp;
+    THE FUTURE IS SEMANTIC &nbsp;<span>✦</span>&nbsp;
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="section-label">§ 01 — The Problem</div>
+
+  <div class="problem-grid">
+    <div class="problem-statement reveal">
+      Every file format created since <em>1970</em> shares one fatal flaw: files are <em>deaf, dumb, and blind</em> to their own content.
+    </div>
+
+    <ul class="problem-list">
+      <li class="reveal">
+        <span class="problem-num">01</span>
+        A PDF does not know it is a contract. A JPG does not know it is a medical scan. Remove the application, the file becomes meaningless bytes.
+      </li>
+      <li class="reveal">
+        <span class="problem-num">02</span>
+        Files lose their context over time. Metadata is stripped. Meaning evaporates. A 20-year-old document becomes an archaeological mystery.
+      </li>
+      <li class="reveal">
+        <span class="problem-num">03</span>
+        Every "smart" solution requires an API, an internet connection, or a proprietary platform. The intelligence lives outside the file — not inside.
+      </li>
+      <li class="reveal">
+        <span class="problem-num">04</span>
+        Billions of files are created daily. None of them can answer a single question about themselves. Not one.
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="solution" id="solution">
+  <div class="section-label">§ 02 — The Solution</div>
+
+  <h2 class="solution-headline reveal">
+    Introduce<br>
+    <span class="hl">.sema</span><br>
+    Format
+  </h2>
+
+  <p class="reveal" style="font-size:20px; font-style:italic; color:#555; max-width:600px; line-height:1.6;">
+    A new open file format where <strong>intelligence is baked into the file itself.</strong> No API. No internet. No external application. The file opens in any browser and understands itself.
+  </p>
+
+  <div class="layers-grid">
+    <div class="layer reveal">
+      <div class="layer-n">1</div>
+      <div class="layer-name">Content</div>
+      <div class="layer-file">content/original.*</div>
+      <div class="layer-desc">The original file, untouched. Any format. The source of truth preserved forever.</div>
+    </div>
+    <div class="layer reveal">
+      <div class="layer-n">2</div>
+      <div class="layer-name">Manifest</div>
+      <div class="layer-file">sema.json</div>
+      <div class="layer-desc">Rich identity card. Who made it, when, why, in what language, with what context.</div>
+    </div>
+    <div class="layer reveal">
+      <div class="layer-n">3</div>
+      <div class="layer-name">Brain</div>
+      <div class="layer-file">brain.json</div>
+      <div class="layer-desc">Pre-computed semantic intelligence. Keywords. Summary. Q&A pairs. Entities. Baked in at creation. Zero latency forever.</div>
+    </div>
+    <div class="layer reveal">
+      <div class="layer-n">4</div>
+      <div class="layer-name">Viewer</div>
+      <div class="layer-file">view.html</div>
+      <div class="layer-desc">A complete self-contained web app. Opens in any browser. Ask it questions. Get answers. No plugins. No apps.</div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="demo-section" id="demo">
+  <div class="section-label">§ 03 — Live Demo</div>
+
+  <h2 class="demo-title">
+    Drop a file.<br>
+    Watch it become<br>
+    <span class="ac">intelligent.</span>
+  </h2>
+
+  <div class="demo-container">
+    <!-- INPUT -->
+    <div class="demo-box">
+      <div class="demo-box-label">Input — Any File</div>
+
+      <div id="drop-zone">
+        <div class="dz-icon">📂</div>
+        <div class="dz-text">
+          Drop any file here<br>
+          <span style="color:#444">PDF · TXT · JPG · DOCX · XLSX</span>
+        </div>
+        <input type="file" id="file-input" style="display:none" accept="*/*">
+        <button onclick="document.getElementById('file-input').click()" style="background:transparent;border:1px solid #333;color:#888;font-family:var(--mono);font-size:12px;padding:8px 16px;margin-top:8px;letter-spacing:1px;">
+          or click to browse
+        </button>
+      </div>
+      <button class="demo-process-btn" id="process-btn">
+        ⚡ Build .sema File
+      </button>
+    </div>
+
+    <!-- ARROW -->
+    <div class="demo-arrow">→</div>
+
+    <!-- OUTPUT -->
+    <div class="demo-box">
+      <div class="demo-box-label">Output — .sema Archive</div>
+      <div id="output-box">
+        <div style="color:#333; font-family:var(--mono); font-size:13px; padding:60px 0; text-align:center; line-height:2;">
+          Waiting for file...<br>
+          <span style="color:#222; font-size:11px;">intelligence will be baked in</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASK DEMO -->
+  <div id="ask-demo" style="display:none; max-width:900px; margin:40px auto 0; background:#111; border:1px solid #1a1a1a; padding:28px;">
+    <div style="font-family:var(--mono); font-size:10px; letter-spacing:3px; color:#555; margin-bottom:16px;">ASK YOUR FILE</div>
+    <div style="display:flex; gap:10px;">
+      <input type="text" id="ask-input" placeholder="What is this file about? / ما هذا الملف؟" style="flex:1; background:#0a0a0a; border:1px solid #222; color:#eee; padding:12px 16px; font-size:14px; font-family:var(--mono); outline:none;">
+      <button id="ask-btn" style="background:var(--accent); color:#000; font-family:var(--mono); font-size:13px; font-weight:700; padding:12px 20px; border:none; white-space:nowrap; letter-spacing:1px;">Ask →</button>
+    </div>
+    <div id="ask-result" style="margin-top:16px; font-size:14px; color:#aaa; font-style:italic; min-height:40px; padding:12px 16px; background:#0a0a0a; display:none; border-left:3px solid var(--accent);"></div>
+  </div>
+</section>
+
+<!-- COMPARISON -->
+<section class="comparison-section" id="compare">
+  <div class="section-label">§ 04 — Why .sema Wins</div>
+
+  <h2 class="reveal">The last<br>comparison<br>you'll need.</h2>
+
+  <table class="comp-table reveal">
+    <thead>
+      <tr>
+        <th>Capability</th>
+        <th>PDF</th>
+        <th>JPG / PNG</th>
+        <th>HTML</th>
+        <th>.sema ✦</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Opens in any browser, no app</td><td class="p">Partial</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓ Always</td></tr>
+      <tr><td>Self-describing & queryable</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Built-in</td></tr>
+      <tr><td>Original file preserved</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td><td class="y">✓ Intact</td></tr>
+      <tr><td>Works fully offline</td><td class="y">✓</td><td class="y">✓</td><td class="p">Partial</td><td class="y">✓ Always</td></tr>
+      <tr><td>Human + machine readable</td><td class="p">Partial</td><td class="n">✗</td><td class="p">Partial</td><td class="y">✓ Both</td></tr>
+      <tr><td>Semantic Q&A (no API)</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Zero latency</td></tr>
+      <tr><td>Multilingual built-in</td><td class="n">✗</td><td class="n">✗</td><td class="p">Manual</td><td class="y">✓ Native</td></tr>
+      <tr><td>Preserves context forever</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Permanent</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <p class="manifesto-text reveal">
+    "The file must carry its own soul. It must know what it <strong>is</strong>, what it <strong>means</strong>, and how to <strong>present itself</strong> — to anyone, anywhere, a thousand years from now."
+  </p>
+  <p class="manifesto-sub reveal">— The .sema Manifesto · TREN Studio · Morocco · 2025</p>
+</section>
+
+<!-- DOWNLOAD -->
+<section class="download-section" id="download">
+  <div class="section-label">§ 05 — Get It</div>
+
+  <h2 class="dl-headline reveal">
+    Start<br>Building<br>Today.
+  </h2>
+
+  <div class="dl-grid">
+    <div class="dl-card reveal">
+      <div class="dl-card-type">Python · CLI</div>
+      <div class="dl-card-title">Builder</div>
+      <div class="dl-card-desc">Convert any file to .sema in one command. PDF, DOCX, images, spreadsheets. Pure local processing.</div>
+      <a href="sema_builder.py" class="dl-card-link" download>Download sema_builder.py →</a>
+    </div>
+    <div class="dl-card reveal">
+      <div class="dl-card-type">HTML · Viewer</div>
+      <div class="dl-card-title">Viewer</div>
+      <div class="dl-card-desc">Open and interact with any .sema file directly in your browser. Ask questions. Get instant answers.</div>
+      <a href="#demo" class="dl-card-link">Try Demo →</a>
+    </div>
+    <div class="dl-card reveal">
+      <div class="dl-card-type">Document</div>
+      <div class="dl-card-title">Spec v1.0</div>
+      <div class="dl-card-desc">Full technical specification. Build your own tools. Extend the format. It's open. It's yours.</div>
+      <a href="sema-spec.html" class="dl-card-link">Read Spec →</a>
+    </div>
+    <div class="dl-card reveal">
+      <div class="dl-card-type">Community</div>
+      <div class="dl-card-title">Contribute</div>
+      <div class="dl-card-desc">This is an open standard. Build parsers, plugins, viewers. Help us change the history of files.</div>
+      <a href="https://trenstudio.com" class="dl-card-link">Join Movement →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">.sema Format v1.0</span>
+  <span>Built by <a href="https://trenstudio.com">TREN Studio</a> · Morocco</span>
+  <span>MIT License · Open Standard · Free Forever</span>
+  <span>© 2025 TREN Studio · <a href="https://trenstudio.com/sema">trenstudio.com/sema</a></span>
+</footer>
+
+<script>
+/* ── CURSOR ── */
+const cursor = document.getElementById('cursor');
+let mx = 0, my = 0;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top = my + 'px';
+});
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => cursor.classList.add('big'));
+  el.addEventListener('mouseleave', () => cursor.classList.remove('big'));
+});
+
+/* ── SCROLL REVEAL ── */
+const reveals = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => e.target.classList.add('visible'), 80);
+    }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(r => io.observe(r));
+
+/* ── DEMO ENGINE ── */
+let currentFile = null;
+let currentBrain = null;
+
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const processBtn = document.getElementById('process-btn');
+const outputBox = document.getElementById('output-box');
+const askDemo = document.getElementById('ask-demo');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+function handleFile(file) {
+  currentFile = file;
+  dropZone.classList.add('has-file');
+  dropZone.innerHTML = `
+    <div class="dz-icon">✓</div>
+    <div class="dz-name">${file.name}</div>
+    <div class="dz-text">${(file.size / 1024).toFixed(1)} KB · ${file.type || 'unknown type'}</div>
+  `;
+  processBtn.classList.add('visible');
+}
+
+processBtn.addEventListener('click', async () => {
+  if (!currentFile) return;
+  processBtn.textContent = '⏳ Processing...';
+  processBtn.disabled = true;
+
+  // Simulate processing steps
+  outputBox.innerHTML = '';
+  await sleep(200);
+
+  const steps = [
+    { icon: '🔐', name: 'sema.json', desc: 'Computing checksum & manifest...', size: '1.1 KB' },
+    { icon: '🧠', name: 'brain.json', desc: 'Generating semantic intelligence...', size: '3.8 KB' },
+    { icon: '🌐', name: 'view.html', desc: 'Building self-rendering viewer...', size: '9.5 KB' },
+    { icon: '📦', name: `content/${currentFile.name}`, desc: 'Preserving original...', size: `${(currentFile.size/1024).toFixed(1)} KB` },
+  ];
+
+  // Read file to extract text for brain simulation
+  const text = await readFileText(currentFile);
+  currentBrain = buildLocalBrain(text, currentFile.name);
+
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    const row = document.createElement('div');
+    row.className = 'out-row';
+    row.innerHTML = `
+      <div class="out-dot"></div>
+      <div class="out-file">${s.icon} ${s.name}</div>
+      <div class="out-size">${s.size}</div>
+      <div class="out-status">✓</div>
+    `;
+    outputBox.appendChild(row);
+    await sleep(350);
+    row.classList.add('show');
+  }
+
+  // Add final success row
+  await sleep(200);
+  const totalKB = ((currentFile.size / 1024) + 14.4).toFixed(1);
+  const doneRow = document.createElement('div');
+  doneRow.className = 'out-row show';
+  doneRow.innerHTML = `
+    <div style="width:100%; padding:12px 0 0; font-family:var(--mono); font-size:12px; color:var(--accent); font-weight:700;">
+      ⚡ ${currentFile.name.replace(/\.[^.]+$/, '')}.sema — ${totalKB} KB total
+    </div>
+  `;
+  outputBox.appendChild(doneRow);
+
+  processBtn.textContent = '✓ Done — Ask your file below!';
+  processBtn.style.background = '#1a1a00';
+  processBtn.style.color = 'var(--accent)';
+  processBtn.disabled = true;
+
+  askDemo.style.display = 'block';
+  askDemo.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+// Local brain builder (client-side, no API)
+function buildLocalBrain(text, filename) {
+  const words = text.toLowerCase().replace(/[^\w\s\u0600-\u06FF]/g, ' ').split(/\s+/)
+    .filter(w => w.length > 3);
+  const stopwords = new Set(['this','that','with','from','have','been','they','will','your','what','which','when','where','there','their','these','those','then','than','into','over','after','about','more','also','just','some','such','like','time','only','very','much','each','both','most','other','many','well','here','even','back','good','still','its']);
+  const filtered = words.filter(w => !stopwords.has(w));
+  const freq = {};
+  filtered.forEach(w => freq[w] = (freq[w] || 0) + 1);
+  const keywords = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,12).map(e => e[0]);
+
+  const sentences = text.split(/[.!?؟\n]/).filter(s => s.trim().length > 30);
+  const summary = sentences.slice(0, 2).join('. ').slice(0, 200) || `File: ${filename}`;
+
+  const lang = /[\u0600-\u06FF]/.test(text) ? 'ar' : 'en';
+
+  // Detect content type
+  let type = 'document/generic';
+  const tl = text.toLowerCase();
+  if (/وصفة|recipe|ingredient|tablespoon|كوب|ملعقة/.test(tl)) type = 'document/recipe';
+  else if (/invoice|فاتورة|total|amount/.test(tl)) type = 'document/invoice';
+
+  const qa = [
+    { q: "what is this file about", a: summary },
+    { q: "what are the main topics", a: keywords.slice(0,6).join(', ') },
+    { q: "ما هذا الملف", a: summary },
+    { q: "what type is this", a: type },
+    { q: "main keywords", a: keywords.join(', ') },
+    { q: "language", a: lang === 'ar' ? 'Arabic (العربية)' : 'English' },
+  ];
+
+  return { summary, keywords, qa, lang, type, searchText: text.slice(0, 5000) };
+}
+
+// Ask the file
+document.getElementById('ask-btn').addEventListener('click', askFile);
+document.getElementById('ask-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') askFile();
+});
+
+function askFile() {
+  if (!currentBrain) return;
+  const q = document.getElementById('ask-input').value.trim().toLowerCase();
+  if (!q) return;
+
+  const resultEl = document.getElementById('ask-result');
+  resultEl.style.display = 'block';
+  resultEl.textContent = '...';
+
+  // Search Q&A
+  const qWords = q.split(' ').filter(w => w.length > 2);
+  let best = null, bestScore = 0;
+
+  for (const pair of currentBrain.qa) {
+    const pq = pair.q.toLowerCase();
+    const score = qWords.filter(w => pq.includes(w)).length;
+    if (score > bestScore) { bestScore = score; best = pair; }
+  }
+
+  if (best && bestScore >= 1) {
+    resultEl.textContent = best.a;
+    return;
+  }
+
+  // Search in text
+  const sentences = currentBrain.searchText.split(/[.!?؟\n]/).filter(s => s.trim().length > 20);
+  let topSentence = '', topScore = 0;
+  for (const s of sentences) {
+    const sl = s.toLowerCase();
+    const score = qWords.filter(w => sl.includes(w)).length;
+    if (score > topScore) { topScore = score; topSentence = s.trim(); }
+  }
+
+  if (topSentence && topScore > 0) {
+    resultEl.textContent = topSentence;
+  } else {
+    resultEl.textContent = "No specific answer found. Try: 'what is this about' or 'main topics'";
+  }
+}
+
+// Utilities
+async function readFileText(file) {
+  return new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result || '');
+    reader.onerror = () => resolve('');
+    if (file.type.startsWith('image/')) {
+      resolve(`Image file: ${file.name} (${file.type}) size: ${file.size} bytes`);
+    } else if (file.name.endsWith('.pdf')) {
+      resolve(`PDF Document: ${file.name}`);
+    } else {
+      reader.readAsText(file, 'utf-8');
+    }
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
