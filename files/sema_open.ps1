@@ -29,9 +29,31 @@ function Open-SemaFile($path) {
         }
 
         if ($viewFile) {
-            Start-Process $viewFile
-        } else {
-            [System.Windows.Forms.MessageBox]::Show("No view.html found inside the SEMA file.", "SEMA Viewer Error", 0, 16)
+            $browser = $null
+            try {
+                $progId = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' -ErrorAction SilentlyContinue).ProgId
+                if ($progId -match "Brave") { $progId = "BraveHTML" } # Fallback for Brave sometimes
+                if ($progId) {
+                    $command = (Get-ItemProperty "HKCR:\$progId\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
+                    if ($command) {
+                        if ($command -match '"([^"]+\.exe)"') {
+                            $browser = $matches[1]
+                        } elseif ($command -match '([^ ]+\.exe)') {
+                            $browser = $matches[1]
+                        }
+                    }
+                }
+            } catch {}
+
+            if ($browser -and (Test-Path $browser)) {
+                Start-Process $browser -ArgumentList "`"$viewFile`""
+            } else {
+                try {
+                    Start-Process "msedge.exe" -ArgumentList "`"$viewFile`"" -ErrorAction Stop
+                } catch {
+                    Start-Process $viewFile
+                }
+            }
         }
 
     } catch {
