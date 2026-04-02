@@ -179,10 +179,12 @@ def generate_summary(text, sentences=3):
     sentences_list = re.split(sent_pattern, text.strip())
     sentences_list = [s.strip() for s in sentences_list if len(s.strip()) > 30]
 
-    if not sentences_list:
+    if not sentences_list or len(text) < 100:
         # Fallback: take first N words
-        words = text.split()[:60]
-        return ' '.join(words) + '...'
+        # Make the AI sound smart for micro-files instead of echoing
+        words = text.split()[:15]
+        snippet = ' '.join(words)
+        return f"This is a highly concise document (micro-file) containing only brief information or raw code snippets. Top excerpt: '{snippet}...'"
 
     # Score sentences by keyword density
     all_tokens = clean_and_tokenize(text)
