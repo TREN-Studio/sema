@@ -3,330 +3,1081 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>.sema — The File Format That Understands Itself | TREN Studio</title>
-<meta name="description" content="A new open file format where every file carries its own intelligence. No API. No internet. Built by TREN Studio, Morocco.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+<meta name="description" content="SEMA — The Semantic File Format. Files that think. Files that answer. The future of how the world stores information.">
+<meta property="og:title" content="SEMA — Files That Think">
+<meta property="og:description" content="A new file format where every file carries its own intelligence.">
+<meta property="og:url" content="https://trenstudio.com/sema">
+<title>SEMA — Files That Think</title>
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--ink:#050507;--paper:#f4f1eb;--paper2:#ede9e0;--accent:#e8ff00;--muted:#888070;--border:#d4cfc3;--dark:#0f0e0c;--mono:'IBM Plex Mono',monospace;--display:'Bebas Neue',sans-serif;--body:'Fraunces',serif}
-html{scroll-behavior:smooth}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:9998}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 40px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);border-bottom:1px solid var(--border)}
-.nav-logo{font-family:var(--mono);font-size:13px;font-weight:700;text-decoration:none;color:var(--ink)}.nav-logo span{color:var(--muted)}
-.nav-links{display:flex;gap:28px;align-items:center}
-.nav-links a{font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;color:var(--muted);transition:color .2s}
-.nav-links a:hover{color:var(--ink)}
-.nav-badge{background:var(--ink)!important;color:var(--accent)!important;padding:6px 14px!important;font-weight:700!important}
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:120px 40px 60px;position:relative;overflow:hidden}
-.hero-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:clamp(180px,30vw,480px);color:transparent;-webkit-text-stroke:1px var(--border);white-space:nowrap;pointer-events:none;letter-spacing:-8px;animation:float 8s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-50%,-52%)}}
-.hero-top{display:flex;justify-content:space-between;margin-bottom:auto;padding-top:40px}
-.hero-tag{font-family:var(--mono);font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);padding:6px 14px}
-.hero-date{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:2px}
-.hero-h1{font-family:var(--display);font-size:clamp(80px,17vw,260px);line-height:.88;letter-spacing:-3px}
-.hero-h1 .outline{color:transparent;-webkit-text-stroke:2px var(--ink)}
-.hero-h1 .fill{background:var(--accent);display:inline-block;padding:0 16px;transform:skewX(-2deg)}
-.hero-sub{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;gap:40px;flex-wrap:wrap}
-.hero-desc{font-size:clamp(15px,2vw,20px);font-style:italic;max-width:480px;line-height:1.5;color:#333}
-.hero-btns{display:flex;gap:12px}
-.btn-dark{background:var(--ink);color:var(--accent);font-family:var(--mono);font-size:13px;font-weight:700;padding:14px 28px;text-decoration:none;letter-spacing:1px;transition:transform .15s,box-shadow .15s;display:inline-block}
-.btn-dark:hover{transform:translate(-2px,-2px);box-shadow:4px 4px 0 var(--accent)}
-.btn-outline{background:transparent;color:var(--ink);font-family:var(--mono);font-size:12px;padding:14px 24px;text-decoration:none;border:1px solid var(--border);letter-spacing:1px;display:inline-block;transition:border-color .2s}
-.btn-outline:hover{border-color:var(--ink)}
-.ticker{background:var(--ink);color:var(--accent);padding:12px 0;overflow:hidden;white-space:nowrap}
-.ticker-inner{display:inline-block;animation:tick 30s linear infinite;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
-.ticker-inner span{margin:0 32px;opacity:.35}
-@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-section{padding:90px 40px}
-.s-label{font-family:var(--mono);font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:12px}
-.s-label::before{content:'';display:block;width:28px;height:1px;background:var(--muted)}
-.problem{background:var(--dark);color:var(--paper)}
-.problem .s-label{color:#555}.problem .s-label::before{background:#555}
-.prob-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-top:50px}
-.prob-stmt{font-size:clamp(22px,3.5vw,40px);font-weight:300;font-style:italic;line-height:1.35}
-.prob-stmt em{font-style:normal;color:var(--accent);font-weight:700}
-.prob-list{list-style:none}
-.prob-list li{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid #1a1a1a;font-family:var(--mono);font-size:13px;color:#888;line-height:1.6}
-.prob-list li:last-child{border-bottom:none}
-.prob-n{font-size:11px;color:var(--accent);font-weight:700;min-width:20px;margin-top:2px}
-.format-section{background:var(--paper);border-top:1px solid var(--border)}
-.format-h{font-family:var(--display);font-size:clamp(50px,9vw,130px);line-height:.9;letter-spacing:-2px;margin:36px 0 50px}
-.format-h .hl{background:var(--accent);padding:0 12px}
-.layers{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);margin-top:50px}
-.layer{padding:32px 24px;border-right:1px solid var(--border);transition:background .3s}
-.layer:last-child{border-right:none}
-.layer:hover{background:var(--paper2)}
-.layer-n{font-family:var(--display);font-size:64px;color:var(--border);line-height:1;margin-bottom:16px;transition:color .3s}
-.layer:hover .layer-n{color:var(--ink)}
-.layer-name{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px}
-.layer-file{font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:14px}
-.layer-desc{font-size:13px;color:#555;line-height:1.6;font-style:italic}
-.demo-section{background:var(--ink);color:var(--paper);padding:90px 40px}
-.demo-section .s-label{color:#444}.demo-section .s-label::before{background:#444}
-.demo-h{font-family:var(--display);font-size:clamp(40px,7vw,95px);line-height:.95;letter-spacing:-1px;margin:28px 0 44px}
-.demo-h .ac{color:var(--accent)}
-.demo-wrap{display:grid;grid-template-columns:1fr 56px 1fr;align-items:center;max-width:860px;margin:0 auto}
-.demo-box{background:#111;border:1px solid #1f1f1f;padding:28px;min-height:260px}
-.demo-lbl{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#444;margin-bottom:18px}
-.arr{display:flex;align-items:center;justify-content:center;font-size:28px;color:var(--accent);animation:pulse 2s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
-#dz{border:2px dashed #2a2a2a;padding:36px 16px;text-align:center;transition:all .2s;min-height:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;cursor:pointer}
-#dz.ov{border-color:var(--accent);background:#0a0900}
-#dz.ok{border-color:var(--accent);border-style:solid}
-.dz-icon{font-size:32px;opacity:.35}
-.dz-txt{font-family:var(--mono);font-size:12px;color:#555;line-height:1.7}
-.dz-name{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700}
-#ob{min-height:190px;display:flex;flex-direction:column}
-.or{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #181818;opacity:0;transform:translateX(8px);transition:opacity .3s,transform .3s}
-.or.s{opacity:1;transform:translateX(0)}
-.od{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-.of{font-family:var(--mono);font-size:12px;color:#777;flex:1}
-.oz{font-family:var(--mono);font-size:11px;color:#444}
-#pb{width:100%;margin-top:16px;background:var(--accent);color:var(--ink);font-family:var(--mono);font-size:13px;font-weight:700;padding:13px;border:none;letter-spacing:1px;text-transform:uppercase;cursor:pointer;display:none}
-#pb:hover{opacity:.85}
-#pb.v{display:block}
-#ab{display:none;max-width:860px;margin:36px auto 0;background:#111;border:1px solid #1f1f1f;padding:24px}
-#ab.v{display:block}
-.al{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:#444;margin-bottom:14px}
-.ar2{display:flex;gap:10px}
-#qi{flex:1;background:#0a0a0a;border:1px solid #222;color:#eee;padding:11px 14px;font-size:13px;font-family:var(--mono);outline:none}
-#qi:focus{border-color:var(--accent)}
-#abtn{background:var(--accent);color:#000;font-family:var(--mono);font-size:12px;font-weight:700;padding:11px 18px;border:none;cursor:pointer;letter-spacing:1px;white-space:nowrap}
-#ans{margin-top:14px;font-size:13px;color:#aaa;font-style:italic;padding:12px 14px;background:#0a0a0a;border-left:3px solid var(--accent);display:none;line-height:1.6}
-.compare-section{background:var(--paper);border-top:1px solid var(--border)}
-.compare-h{font-family:var(--display);font-size:clamp(44px,7vw,110px);line-height:.9;letter-spacing:-2px;margin:28px 0 50px}
-.tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:13px}
-.tbl th{text-align:left;padding:12px 18px;background:var(--ink);color:var(--paper);font-size:10px;letter-spacing:2px;text-transform:uppercase;border-right:1px solid #333}
-.tbl th:last-child{background:var(--accent);color:var(--ink);border-right:none}
-.tbl td{padding:13px 18px;border:1px solid var(--border);color:#666}
-.tbl td:first-child{color:var(--ink);font-weight:600}
-.tbl td:last-child{background:#f9f7ef;font-weight:700;color:var(--ink)}
-.tbl tr:hover td{background:var(--paper2)}.tbl tr:hover td:last-child{background:#f0f0d0}
-.y{color:#16a34a}.n{color:#dc2626}.p{color:#d97706}
-.manifesto{background:var(--dark);color:var(--paper);text-align:center;padding:110px 40px}
-.mq{font-size:clamp(22px,3.5vw,46px);font-weight:300;font-style:italic;line-height:1.45;max-width:780px;margin:0 auto}
-.mq strong{font-style:normal;font-weight:700;color:var(--accent)}
-.mb{margin-top:36px;font-family:var(--mono);font-size:11px;letter-spacing:3px;color:#444;text-transform:uppercase}
-.dl-section{background:var(--accent);padding:90px 40px}
-.dl-section .s-label{color:#666}.dl-section .s-label::before{background:#666}
-.dl-h{font-family:var(--display);font-size:clamp(54px,9vw,130px);line-height:.9;letter-spacing:-2px;color:var(--ink);margin:28px 0 44px}
-.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:2px}
-.dl-card{background:#d4e800;padding:32px;transition:background .2s}
-.dl-card:hover{background:var(--ink)}
-.dl-card:hover .dl-title,.dl-card:hover .dl-link{color:var(--accent)}
-.dl-card:hover .dl-desc{color:#777}
-.dl-type{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#777;margin-bottom:10px}
-.dl-title{font-family:var(--display);font-size:34px;color:var(--ink);letter-spacing:-1px;margin-bottom:10px;transition:color .2s}
-.dl-desc{font-size:13px;color:#555;line-height:1.6;font-style:italic;transition:color .2s}
-.dl-link{display:inline-flex;align-items:center;gap:6px;margin-top:18px;font-family:var(--mono);font-size:12px;font-weight:700;color:var(--ink);text-decoration:none;letter-spacing:1px;text-transform:uppercase;transition:color .2s}
-.dl-link:hover{text-decoration:underline}
-footer{background:var(--ink);color:#3a3a3a;padding:36px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-family:var(--mono);font-size:11px;letter-spacing:1px}
-footer a{color:#555;text-decoration:none}
-footer a:hover{color:var(--accent)}
-.fl{color:var(--paper);font-weight:700}
-.reveal{opacity:0;transform:translateY(22px);transition:opacity .75s ease,transform .75s ease}
-.reveal.in{opacity:1;transform:translateY(0)}
-@media(max-width:768px){nav{padding:14px 20px}.nav-links{display:none}.hero,.demo-section,.manifesto,.dl-section,section{padding:70px 20px 50px}.prob-grid,.demo-wrap{grid-template-columns:1fr}.arr{transform:rotate(90deg);margin:16px 0}.layers{grid-template-columns:1fr 1fr}footer{flex-direction:column;text-align:center}}
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+:root {
+  --teal: #00C8B4;
+  --teal2: #00A090;
+  --bg: #080810;
+  --bg2: #0D0D1A;
+  --bg3: #121220;
+  --border: rgba(0,200,180,0.15);
+  --border2: rgba(255,255,255,0.06);
+  --text: #E0E0F0;
+  --muted: #6060808;
+  --font: 'Space Grotesk', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── GRID ── */
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,200,180,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,180,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2.5rem;
+  background: rgba(8,8,16,0.85);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border2);
+}
+
+.nav-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+
+.nav-mark {
+  width: 34px; height: 34px;
+  background: var(--teal);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 14px; font-weight: 500;
+  color: #08080F; letter-spacing: -0.5px;
+}
+
+.nav-brand {
+  font-size: 16px; font-weight: 600; color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.nav-brand em { color: var(--teal); font-style: normal; }
+
+.nav-links {
+  display: flex; align-items: center; gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  color: rgba(224,224,240,0.55); text-decoration: none;
+  font-size: 14px; transition: color 0.2s;
+}
+
+.nav-links a:hover { color: var(--teal); }
+
+.nav-cta {
+  background: var(--teal); color: #08080F !important;
+  padding: 8px 18px; border-radius: 8px;
+  font-weight: 600 !important;
+  transition: all 0.2s !important;
+}
+
+.nav-cta:hover { background: #00DEC8 !important; transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center;
+  padding: 7rem 2rem 4rem;
+  overflow: hidden;
+}
+
+.hero-glow {
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,200,180,0.08) 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(0,200,180,0.08);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 12px; font-family: var(--mono);
+  color: var(--teal); letter-spacing: 0.5px;
+  margin-bottom: 2.5rem;
+  animation: fadeDown 0.8s ease both;
+}
+
+.badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--teal);
+  animation: blink 2s infinite;
+}
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:none} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+
+.hero-title {
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  font-weight: 700;
+  letter-spacing: -3px;
+  line-height: 0.95;
+  margin-bottom: 1.5rem;
+  animation: fadeUp 0.9s 0.1s ease both;
+}
+
+.hero-title .line1 { color: #fff; display: block; }
+.hero-title .line2 { color: var(--teal); display: block; }
+.hero-title .line3 {
+  color: rgba(255,255,255,0.18);
+  display: block;
+  font-size: 0.65em;
+  letter-spacing: -1px;
+  margin-top: 0.15em;
+}
+
+.hero-sub {
+  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  color: rgba(224,224,240,0.5);
+  max-width: 540px;
+  margin: 0 auto 3rem;
+  font-weight: 400;
+  line-height: 1.65;
+  animation: fadeUp 0.9s 0.2s ease both;
+}
+
+.hero-sub strong { color: rgba(224,224,240,0.85); font-weight: 500; }
+
+.hero-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  margin-bottom: 4rem;
+  animation: fadeUp 0.9s 0.3s ease both;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--teal); color: #08080F;
+  padding: 14px 28px; border-radius: 10px;
+  font-family: var(--font); font-size: 15px; font-weight: 700;
+  text-decoration: none; border: none; cursor: pointer;
+  transition: all 0.2s; letter-spacing: -0.3px;
+}
+
+.btn-primary:hover { background: #00DEC8; transform: translateY(-2px); }
+
+.btn-secondary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: transparent; color: rgba(224,224,240,0.65);
+  padding: 14px 28px; border-radius: 10px;
+  font-family: var(--font); font-size: 15px; font-weight: 500;
+  text-decoration: none; border: 1px solid var(--border2); cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover { border-color: var(--border); color: var(--text); }
+
+/* ── HERO FILE DEMO ── */
+.hero-file-demo {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 0;
+  max-width: 580px; width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  animation: fadeUp 0.9s 0.4s ease both;
+  box-shadow: 0 0 60px rgba(0,200,180,0.06);
+}
+
+.demo-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 14px 18px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border2);
+}
+
+.demo-dot { width: 10px; height: 10px; border-radius: 50%; }
+.demo-dot.r { background: #FF5F56; }
+.demo-dot.y { background: #FFBD2E; }
+.demo-dot.g { background: #27C93F; }
+
+.demo-title {
+  font-family: var(--mono); font-size: 12px;
+  color: rgba(224,224,240,0.3);
+  margin-left: 8px;
+}
+
+.demo-body {
+  padding: 1.5rem;
+  text-align: left;
+}
+
+.demo-filename {
+  font-family: var(--mono); font-size: 13px;
+  color: var(--teal); margin-bottom: 1rem;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.demo-rows { display: flex; flex-direction: column; gap: 8px; }
+
+.demo-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 10px 12px;
+}
+
+.demo-layer-tag {
+  font-family: var(--mono); font-size: 10px; font-weight: 500;
+  padding: 3px 8px; border-radius: 4px;
+  white-space: nowrap; flex-shrink: 0;
+}
+
+.tag-content { background: rgba(0,200,180,0.12); color: var(--teal); }
+.tag-meta { background: rgba(120,100,255,0.12); color: #A090FF; }
+.tag-brain { background: rgba(255,160,60,0.12); color: #FFA03C; }
+.tag-view { background: rgba(60,200,120,0.12); color: #3CC880; }
+
+.demo-row-text {
+  font-size: 12px; color: rgba(224,224,240,0.5);
+  font-family: var(--mono);
+}
+
+/* ── SECTION BASE ── */
+section { position: relative; z-index: 1; }
+
+.section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 6rem 2rem;
+}
+
+.section-label {
+  font-family: var(--mono); font-size: 11px; font-weight: 400;
+  color: var(--teal); letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.section-title {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700; letter-spacing: -1.5px;
+  line-height: 1.05; margin-bottom: 1.2rem;
+}
+
+.section-sub {
+  font-size: 17px; color: rgba(224,224,240,0.5);
+  max-width: 540px; line-height: 1.65;
+}
+
+/* ── DIVIDER ── */
+.divider {
+  width: 100%; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  position: relative; z-index: 1;
+}
+
+/* ── PROBLEM SECTION ── */
+.problem-section { background: var(--bg2); }
+
+.problem-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border2);
+  border-radius: 16px; overflow: hidden;
+  border: 1px solid var(--border2);
+  margin-top: 3rem;
+}
+
+.problem-cell {
+  background: var(--bg2);
+  padding: 2rem;
+}
+
+.problem-cell.highlight { background: rgba(0,200,180,0.04); }
+
+.problem-icon {
+  font-size: 2rem; margin-bottom: 1rem; line-height: 1;
+  display: block;
+}
+
+.problem-label {
+  font-size: 11px; font-family: var(--mono);
+  text-transform: uppercase; letter-spacing: 1.5px;
+  margin-bottom: 0.5rem;
+}
+
+.problem-label.old { color: rgba(255,80,80,0.7); }
+.problem-label.new { color: var(--teal); }
+
+.problem-cell h3 {
+  font-size: 1.15rem; font-weight: 600; margin-bottom: 0.6rem;
+  letter-spacing: -0.3px;
+}
+
+.problem-cell p {
+  font-size: 14px; color: rgba(224,224,240,0.45);
+  line-height: 1.6;
+}
+
+/* ── LAYERS SECTION ── */
+.layers-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 16px; margin-top: 3rem;
+}
+
+.layer-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 1.8rem;
+  transition: all 0.3s;
+  position: relative; overflow: hidden;
+}
+
+.layer-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+
+.layer-card.l1::before { background: var(--teal); }
+.layer-card.l2::before { background: #A090FF; }
+.layer-card.l3::before { background: #FFA03C; }
+.layer-card.l4::before { background: #3CC880; }
+
+.layer-card:hover {
+  border-color: var(--border);
+  transform: translateY(-3px);
+}
+
+.layer-num {
+  font-family: var(--mono); font-size: 11px;
+  color: rgba(224,224,240,0.25); margin-bottom: 1rem;
+  letter-spacing: 1px;
+}
+
+.layer-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.l1 .layer-icon { background: rgba(0,200,180,0.1); }
+.l2 .layer-icon { background: rgba(160,144,255,0.1); }
+.l3 .layer-icon { background: rgba(255,160,60,0.1); }
+.l4 .layer-icon { background: rgba(60,200,128,0.1); }
+
+.layer-icon svg {
+  width: 20px; height: 20px;
+  fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.l1 .layer-icon svg { stroke: var(--teal); }
+.l2 .layer-icon svg { stroke: #A090FF; }
+.l3 .layer-icon svg { stroke: #FFA03C; }
+.l4 .layer-icon svg { stroke: #3CC880; }
+
+.layer-card h3 { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.2px; }
+.layer-card p { font-size: 13.5px; color: rgba(224,224,240,0.45); line-height: 1.6; }
+
+.layer-path {
+  font-family: var(--mono); font-size: 11px;
+  color: rgba(224,224,240,0.2);
+  margin-top: 1rem; padding-top: 1rem;
+  border-top: 1px solid var(--border2);
+}
+
+/* ── DEMO SECTION ── */
+.demo-section { background: var(--bg2); }
+
+.drop-zone {
+  border: 1.5px dashed var(--border);
+  border-radius: 16px;
+  padding: 4rem 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s;
+  background: rgba(0,200,180,0.02);
+  position: relative; overflow: hidden;
+  margin-top: 3rem;
+}
+
+.drop-zone::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 120%, rgba(0,200,180,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.drop-zone:hover, .drop-zone.over {
+  border-color: var(--teal);
+  background: rgba(0,200,180,0.04);
+}
+
+.drop-icon-wrap {
+  width: 72px; height: 72px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 18px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 1.5rem;
+}
+
+.drop-icon-wrap svg {
+  width: 30px; height: 30px;
+  stroke: var(--teal); fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.drop-zone h3 { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+.drop-zone p { font-size: 14px; color: rgba(224,224,240,0.4); margin-bottom: 1.5rem; }
+
+#drop-input { display: none; }
+
+/* Live result */
+#live-result {
+  display: none;
+  margin-top: 2rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  animation: fadeUp 0.4s ease;
+}
+
+.result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+
+.result-filename {
+  font-family: var(--mono); font-size: 14px; color: var(--teal);
+  display: flex; align-items: center; gap: 8px;
+}
+
+.result-close {
+  background: none; border: none; color: rgba(224,224,240,0.3);
+  cursor: pointer; font-size: 18px; transition: color 0.2s;
+}
+
+.result-close:hover { color: var(--text); }
+
+.result-layers {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 8px; margin-bottom: 1.2rem;
+}
+
+.result-layer {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.result-layer-name {
+  font-family: var(--mono); font-size: 11px; color: var(--teal);
+  margin-bottom: 4px;
+}
+
+.result-layer-size {
+  font-size: 11px; color: rgba(224,224,240,0.3);
+}
+
+.result-content {
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 1rem;
+  font-family: var(--mono); font-size: 12px;
+  color: rgba(224,224,240,0.6);
+  max-height: 150px; overflow-y: auto;
+  white-space: pre-wrap; word-break: break-all;
+  line-height: 1.6;
+}
+
+/* ── DOWNLOAD SECTION ── */
+.download-section {}
+
+.download-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 16px; margin-top: 3rem;
+}
+
+.dl-card {
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: 14px;
+  padding: 1.8rem;
+  transition: all 0.25s;
+  display: flex; flex-direction: column;
+}
+
+.dl-card:hover {
+  border-color: var(--border);
+  transform: translateY(-3px);
+}
+
+.dl-card.featured {
+  border-color: var(--border);
+  background: rgba(0,200,180,0.04);
+}
+
+.dl-os {
+  font-size: 2rem; margin-bottom: 1.2rem; line-height: 1;
+}
+
+.dl-name {
+  font-size: 1.1rem; font-weight: 600; margin-bottom: 0.4rem;
+  letter-spacing: -0.3px;
+}
+
+.dl-desc {
+  font-size: 13px; color: rgba(224,224,240,0.4);
+  line-height: 1.5; margin-bottom: 1.5rem;
+  flex: 1;
+}
+
+.dl-badge {
+  display: inline-block;
+  font-family: var(--mono); font-size: 10px;
+  padding: 3px 8px; border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.badge-win { background: rgba(0,120,215,0.15); color: #4090FF; }
+.badge-mac { background: rgba(200,200,200,0.1); color: rgba(224,224,240,0.5); }
+.badge-linux { background: rgba(255,160,0,0.1); color: #FFA030; }
+
+.dl-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--bg3); color: var(--text);
+  border: 1px solid var(--border2);
+  padding: 11px 18px; border-radius: 9px;
+  font-family: var(--font); font-size: 14px; font-weight: 500;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dl-btn:hover { border-color: var(--teal); color: var(--teal); }
+
+.dl-card.featured .dl-btn {
+  background: var(--teal); color: #08080F;
+  border-color: var(--teal); font-weight: 700;
+}
+
+.dl-card.featured .dl-btn:hover { background: #00DEC8; }
+
+.dl-also {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(224,224,240,0.3);
+}
+
+.dl-also a {
+  color: var(--teal); text-decoration: none;
+}
+
+/* ── MANIFESTO ── */
+.manifesto-section {
+  background: var(--bg2);
+  border-top: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+}
+
+.manifesto-text {
+  font-size: clamp(1.4rem, 3.5vw, 2rem);
+  font-weight: 500; letter-spacing: -0.8px;
+  line-height: 1.5; max-width: 700px;
+  color: rgba(224,224,240,0.8);
+}
+
+.manifesto-text strong { color: #fff; font-weight: 700; }
+.manifesto-text em { color: var(--teal); font-style: normal; }
+
+.manifesto-sig {
+  margin-top: 3rem;
+  font-family: var(--mono); font-size: 12px;
+  color: rgba(224,224,240,0.25);
+  display: flex; align-items: center; gap: 12px;
+}
+
+.manifesto-sig::before {
+  content: '';
+  display: block; width: 40px; height: 1px;
+  background: var(--border);
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  padding: 3rem 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  border-top: 1px solid var(--border2);
+  flex-wrap: wrap; gap: 1.5rem;
+}
+
+.footer-logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+
+.footer-copy {
+  font-size: 12px; color: rgba(224,224,240,0.2);
+  font-family: var(--mono);
+}
+
+.footer-links {
+  display: flex; gap: 1.5rem; list-style: none;
+}
+
+.footer-links a {
+  font-size: 13px; color: rgba(224,224,240,0.3);
+  text-decoration: none; transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--teal); }
+
+/* ── SCROLL ANIMATIONS ── */
+.reveal {
+  opacity: 0; transform: translateY(24px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1; transform: none;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  nav { padding: 1rem 1.2rem; }
+  .nav-links { display: none; }
+  .hero-title { letter-spacing: -2px; }
+  .problem-grid { grid-template-columns: 1fr; }
+  .layers-grid { grid-template-columns: 1fr; }
+  .download-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; text-align: center; }
+}
 </style>
 </head>
 <body>
 
+<div class="grid-bg"></div>
+
+<!-- NAV -->
 <nav>
-  <a href="https://trenstudio.com" class="nav-logo">TREN<span>studio</span></a>
-  <div class="nav-links">
-    <a href="#problem">Problem</a>
-    <a href="#format">Format</a>
-    <a href="#demo">Demo</a>
-    <a href="#download">Download</a>
-    <a href="https://trenstudio.com/sema/" class="nav-badge">.SEMA V1.0</a>
-  </div>
+  <a class="nav-logo" href="https://trenstudio.com">
+    <div class="nav-mark">S</div>
+    <span class="nav-brand">SEMA <em>Format</em></span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#layers">Layers</a></li>
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#download">Download</a></li>
+    <li><a href="sema-spec.html">Spec</a></li>
+    <li><a href="#download" class="nav-cta">Get SEMA</a></li>
+  </ul>
 </nav>
 
+<!-- HERO -->
 <section class="hero">
-  <div class="hero-bg" aria-hidden="true">.sema</div>
-  <div class="hero-top">
-    <div class="hero-tag">Open Format — 2025</div>
-    <div class="hero-date">TREN Studio · Morocco 🇲🇦</div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-badge">
+    <span class="badge-dot"></span>
+    v1.0 · Open Standard · TREN Studio
   </div>
-  <div style="position:relative;z-index:1">
-    <h1 class="hero-h1">
-      The File<br>
-      <span class="outline">That Knows</span><br>
-      <span class="fill">Itself.</span>
-    </h1>
-    <div class="hero-sub">
-      <p class="hero-desc">Every file ever made is a dumb container. It knows nothing about itself. We changed that — forever.</p>
-      <div class="hero-btns">
-        <a href="#demo" class="btn-dark">Try Demo →</a>
-        <a href="#download" class="btn-outline">Download</a>
+
+  <h1 class="hero-title">
+    <span class="line1">Files That</span>
+    <span class="line2">Think.</span>
+    <span class="line3">The Future of How the World Stores Information</span>
+  </h1>
+
+  <p class="hero-sub">
+    SEMA is a new file format where every file carries its own
+    <strong>content, intelligence, and memory</strong> — no app required,
+    no internet needed, no questions asked.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#download" class="btn-primary">
+      <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Free
+    </a>
+    <a href="#demo" class="btn-secondary">
+      <svg style="width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      See it live
+    </a>
+  </div>
+
+  <!-- FILE VISUAL -->
+  <div class="hero-file-demo">
+    <div class="demo-bar">
+      <span class="demo-dot r"></span>
+      <span class="demo-dot y"></span>
+      <span class="demo-dot g"></span>
+      <span class="demo-title">harira_recipe.sema</span>
+    </div>
+    <div class="demo-body">
+      <div class="demo-filename">
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+        harira_recipe.sema
+      </div>
+      <div class="demo-rows">
+        <div class="demo-row">
+          <span class="demo-layer-tag tag-content">content/</span>
+          <span class="demo-row-text">harira_recipe.pdf — Original file, untouched</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-layer-tag tag-meta">meta.json</span>
+          <span class="demo-row-text">Author, date, tags, language, origin</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-layer-tag tag-brain">brain.json</span>
+          <span class="demo-row-text">Pre-computed understanding, Q&A pairs</span>
+        </div>
+        <div class="demo-row">
+          <span class="demo-layer-tag tag-view">view.html</span>
+          <span class="demo-row-text">Opens itself — beautifully — in any browser</span>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
-<div class="ticker" aria-hidden="true">
-  <div class="ticker-inner">
-    FILES THAT THINK <span>✦</span> NO API REQUIRED <span>✦</span> OPEN STANDARD <span>✦</span> ZERO LATENCY <span>✦</span> BUILT IN MOROCCO <span>✦</span> MIT LICENSE <span>✦</span> THE FUTURE IS SEMANTIC <span>✦</span>
-    FILES THAT THINK <span>✦</span> NO API REQUIRED <span>✦</span> OPEN STANDARD <span>✦</span> ZERO LATENCY <span>✦</span> BUILT IN MOROCCO <span>✦</span> MIT LICENSE <span>✦</span> THE FUTURE IS SEMANTIC <span>✦</span>
-  </div>
-</div>
+<div class="divider"></div>
 
-<section class="problem" id="problem">
-  <div class="s-label">§ 01 — The Problem</div>
-  <div class="prob-grid">
-    <div class="prob-stmt reveal">Every file format since <em>1970</em> shares one fatal flaw: files are <em>deaf, dumb, and blind</em> to their own content.</div>
-    <ul class="prob-list">
-      <li class="reveal"><span class="prob-n">01</span>A PDF does not know it is a contract. A JPG does not know it is a medical scan. Remove the app — the file becomes meaningless bytes.</li>
-      <li class="reveal"><span class="prob-n">02</span>Files lose context over time. Metadata is stripped. Meaning evaporates. A 20-year-old document becomes an archaeological mystery.</li>
-      <li class="reveal"><span class="prob-n">03</span>Every "smart" solution requires an API, internet, or proprietary platform. The intelligence lives outside the file — never inside.</li>
-    </ul>
+<!-- PROBLEM -->
+<section class="problem-section" id="problem">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">The Problem</div>
+      <h2 class="section-title">Files have been<br>silent for 50 years.</h2>
+      <p class="section-sub">You open a file. You read it. You close it. The file learned nothing. It remembers nothing. It can answer nothing. That ends now.</p>
+    </div>
+
+    <div class="problem-grid reveal" style="transition-delay:0.1s">
+      <div class="problem-cell">
+        <span class="problem-icon">📄</span>
+        <div class="problem-label old">Today's files</div>
+        <h3>Dumb containers</h3>
+        <p>A PDF is just pixels. A DOCX is just XML. A JPG is just bytes. They carry data — but no understanding of that data.</p>
+      </div>
+      <div class="problem-cell highlight">
+        <span class="problem-icon">🧠</span>
+        <div class="problem-label new">SEMA files</div>
+        <h3>Intelligent archives</h3>
+        <p>Every .sema file contains its own content, its own metadata, and its own brain — answering questions before you ask them.</p>
+      </div>
+      <div class="problem-cell">
+        <span class="problem-icon">🔗</span>
+        <div class="problem-label old">Needs apps</div>
+        <h3>App dependency</h3>
+        <p>To open a DOCX you need Word. To open a PSD you need Photoshop. Every format chains you to software.</p>
+      </div>
+      <div class="problem-cell highlight">
+        <span class="problem-icon">🌐</span>
+        <div class="problem-label new">Zero dependency</div>
+        <h3>Self-contained</h3>
+        <p>A .sema file contains its own viewer. Double-click it. It opens in your browser. No app. No install. No internet.</p>
+      </div>
+    </div>
   </div>
 </section>
 
-<section class="format-section" id="format">
-  <div class="s-label">§ 02 — The Solution</div>
-  <h2 class="format-h reveal">Introducing<br><span class="hl">.sema</span><br>Format</h2>
-  <p class="reveal" style="font-size:18px;font-style:italic;color:#555;max-width:580px;line-height:1.6">A new open format where <strong>intelligence is baked into the file itself.</strong> No API. No internet. The file opens in any browser and understands itself.</p>
-  <div class="layers">
-    <div class="layer reveal"><div class="layer-n">1</div><div class="layer-name">Content</div><div class="layer-file">content/original.*</div><div class="layer-desc">The original file, untouched. Any format. The source of truth preserved forever.</div></div>
-    <div class="layer reveal"><div class="layer-n">2</div><div class="layer-name">Manifest</div><div class="layer-file">sema.json</div><div class="layer-desc">Rich identity card. Who made it, when, why, language, context — all structured JSON.</div></div>
-    <div class="layer reveal"><div class="layer-n">3</div><div class="layer-name">Brain</div><div class="layer-file">brain.json</div><div class="layer-desc">Pre-computed semantic intelligence. Keywords, summary, Q&amp;A pairs. Baked in at creation. Zero latency forever.</div></div>
-    <div class="layer reveal"><div class="layer-n">4</div><div class="layer-name">Viewer</div><div class="layer-file">view.html</div><div class="layer-desc">A complete self-contained web app inside the file. Opens in any browser. Ask it questions instantly.</div></div>
+<div class="divider"></div>
+
+<!-- LAYERS -->
+<section id="layers">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Architecture</div>
+      <h2 class="section-title">Four layers.<br>One file.</h2>
+      <p class="section-sub">The SEMA format is a structured ZIP archive. Every layer has a purpose. Every purpose is permanent.</p>
+    </div>
+
+    <div class="layers-grid">
+      <div class="layer-card l1 reveal" style="transition-delay:0.05s">
+        <div class="layer-num">LAYER 01</div>
+        <div class="layer-icon">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <h3>Content</h3>
+        <p>The original file — untouched, uncompressed. PDF, DOCX, JPG, MP4, anything. The soul of the archive.</p>
+        <div class="layer-path">content/ · Original format preserved</div>
+      </div>
+      <div class="layer-card l2 reveal" style="transition-delay:0.1s">
+        <div class="layer-num">LAYER 02</div>
+        <div class="layer-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h3>Metadata</h3>
+        <p>Author, creation date, language, tags, source, version, and semantic context. Rich, structured, machine-readable.</p>
+        <div class="layer-path">meta.json · application/vnd.sema</div>
+      </div>
+      <div class="layer-card l3 reveal" style="transition-delay:0.15s">
+        <div class="layer-num">LAYER 03</div>
+        <div class="layer-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3>Intelligence</h3>
+        <p>Pre-computed understanding of the file's content. Summaries, key concepts, Q&A pairs, extracted entities — all offline.</p>
+        <div class="layer-path">brain.json · Local AI, no API needed</div>
+      </div>
+      <div class="layer-card l4 reveal" style="transition-delay:0.2s">
+        <div class="layer-num">LAYER 04</div>
+        <div class="layer-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><path d="M3 9h18M9 21V9"/></svg>
+        </div>
+        <h3>Viewer</h3>
+        <p>A self-contained HTML interface. Open the file in any browser anywhere in the world and it renders itself perfectly.</p>
+        <div class="layer-path">view.html · Zero dependency rendering</div>
+      </div>
+    </div>
   </div>
 </section>
 
+<div class="divider"></div>
+
+<!-- DEMO -->
 <section class="demo-section" id="demo">
-  <div class="s-label">§ 03 — Live Demo</div>
-  <h2 class="demo-h">Drop a file.<br>Watch it become<br><span class="ac">intelligent.</span></h2>
-  <div class="demo-wrap">
-    <div class="demo-box">
-      <div class="demo-lbl">Input — Any File</div>
-      <div id="dz" onclick="document.getElementById('fi').click()">
-        <div class="dz-icon">📂</div>
-        <div class="dz-txt">Drop any file here<br><span style="color:#333">PDF · TXT · JPG · DOCX · XLSX</span></div>
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Live Demo</div>
+      <h2 class="section-title">Drop a .sema file.<br>Watch it think.</h2>
+      <p class="section-sub">Try it right now — drag any .sema file and see all its layers instantly. No upload. No server. 100% local.</p>
+    </div>
+
+    <div class="drop-zone reveal" id="demo-drop" style="transition-delay:0.1s">
+      <div class="drop-icon-wrap">
+        <svg viewBox="0 0 24 24">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
       </div>
-      <input type="file" id="fi" style="display:none">
-      <button id="pb">⚡ Convert to .sema</button>
+      <h3>Drop your .sema file here</h3>
+      <p>or click to choose from your computer</p>
+      <button class="btn-primary" onclick="event.stopPropagation();document.getElementById('drop-input').click()">
+        <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/></svg>
+        Choose .sema file
+      </button>
+      <input type="file" id="drop-input" accept=".sema,.zip">
     </div>
-    <div class="arr">→</div>
-    <div class="demo-box">
-      <div class="demo-lbl">Output — .sema Archive</div>
-      <div id="ob"><div style="color:#2a2a2a;font-family:var(--mono);font-size:12px;padding:50px 0;text-align:center;line-height:2">Waiting for file...<br><span style="color:#1a1a1a;font-size:11px">intelligence will be baked in</span></div></div>
-    </div>
-  </div>
-  <div id="ab">
-    <div class="al">💬 Ask Your File — brain.json — No API — No Internet</div>
-    <div class="ar2">
-      <input type="text" id="qi" placeholder="What is this about? / ما هذا الملف؟ / De quoi s'agit-il?">
-      <button id="abtn">Ask →</button>
-    </div>
-    <div id="ans"></div>
-  </div>
-</section>
 
-<section class="compare-section" id="compare">
-  <div class="s-label">§ 04 — Why .sema Wins</div>
-  <h2 class="compare-h reveal">The last<br>comparison<br>you need.</h2>
-  <table class="tbl reveal">
-    <thead><tr><th>Capability</th><th>PDF</th><th>JPG/PNG</th><th>HTML</th><th>.sema ✦</th></tr></thead>
-    <tbody>
-      <tr><td>Opens in browser, no app</td><td class="p">Partial</td><td class="n">✗</td><td class="y">✓</td><td class="y">✓ Always</td></tr>
-      <tr><td>Self-describing &amp; queryable</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Built-in</td></tr>
-      <tr><td>Original file preserved</td><td class="y">✓</td><td class="y">✓</td><td class="n">✗</td><td class="y">✓ Intact</td></tr>
-      <tr><td>Works fully offline</td><td class="y">✓</td><td class="y">✓</td><td class="p">Partial</td><td class="y">✓ Always</td></tr>
-      <tr><td>Semantic Q&amp;A — zero API</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Instant</td></tr>
-      <tr><td>Multilingual built-in</td><td class="n">✗</td><td class="n">✗</td><td class="p">Manual</td><td class="y">✓ Native</td></tr>
-      <tr><td>Preserves context forever</td><td class="n">✗</td><td class="n">✗</td><td class="n">✗</td><td class="y">✓ Permanent</td></tr>
-    </tbody>
-  </table>
-</section>
-
-<section class="manifesto">
-  <p class="mq reveal">"The file must carry its own soul. It must know what it <strong>is</strong>, what it <strong>means</strong>, and how to <strong>present itself</strong> — to anyone, anywhere, a thousand years from now."</p>
-  <p class="mb reveal">— The .sema Manifesto · TREN Studio · Morocco · 2025</p>
-</section>
-
-<section class="dl-section" id="download">
-  <div class="s-label">§ 05 — Get It Now</div>
-  <h2 class="dl-h reveal">Start<br>Building<br>Today.</h2>
-  <div class="dl-grid">
-    <div class="dl-card reveal">
-      <div class="dl-type">Python · CLI Tool</div>
-      <div class="dl-title">Builder</div>
-      <div class="dl-desc">Convert any file to .sema in one command. PDF, DOCX, images, spreadsheets. Pure local — zero internet.</div>
-      <a href="files/sema_builder.py" download class="dl-link">⬇ Download Builder</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">HTML · Browser Viewer</div>
-      <div class="dl-title">Viewer</div>
-      <div class="dl-desc">Open and interact with any .sema file in your browser. Ask questions. Get instant offline answers.</div>
-      <a href="sema-viewer.html" class="dl-link">⬇ Download Viewer</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">Full Specification</div>
-      <div class="dl-title">Spec v1.0</div>
-      <div class="dl-desc">Complete technical spec. Build your own tools. Extend the format. It's open. It's yours. Forever.</div>
-      <a href="sema-spec.html" class="dl-link">→ Read Spec</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">🪟 Windows Installer</div>
-      <div class="dl-title">Windows</div>
-      <div class="dl-desc">One-click installer. Registers .sema in Windows, adds icon, right-click menu. Run as Administrator.</div>
-      <a href="files/install_sema_windows.bat" download class="dl-link">⬇ Download Installer</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">🍎 macOS Installer</div>
-      <div class="dl-title">macOS</div>
-      <div class="dl-desc">Shell script that registers .sema with macOS Launch Services and creates an .app bundle.</div>
-      <a href="files/install_sema_macos.sh" download class="dl-link">⬇ Download Installer</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">🐧 Linux Installer</div>
-      <div class="dl-title">Linux</div>
-      <div class="dl-desc">Registers MIME type system-wide via freedesktop.org. Works on Ubuntu, Fedora, Arch and more.</div>
-      <a href="files/install_sema_linux.sh" download class="dl-link">⬇ Download Installer</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">Example · Demo File</div>
-      <div class="dl-title">Demo .sema</div>
-      <div class="dl-desc">A real .sema file — Moroccan Harira recipe. Download it, open in browser, ask it questions. See the magic live.</div>
-      <a href="files/harira_recipe.sema" download class="dl-link">⬇ Download Example</a>
-    </div>
-    <div class="dl-card reveal">
-      <div class="dl-type">Open Source</div>
-      <div class="dl-title">GitHub</div>
-      <div class="dl-desc">Open source. Build parsers, plugins, viewers. Contribute. Help us change the history of files.</div>
-      <a href="https://github.com/TREN-Studio/sema" target="_blank" rel="noopener" class="dl-link">→ View on GitHub</a>
+    <div id="live-result">
+      <div class="result-header">
+        <div class="result-filename">
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round" viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/></svg>
+          <span id="res-name">file.sema</span>
+        </div>
+        <button class="result-close" onclick="document.getElementById('live-result').style.display='none'">×</button>
+      </div>
+      <div class="result-layers" id="res-layers"></div>
+      <div class="result-content" id="res-content">Loading...</div>
+      <div style="margin-top:1rem;text-align:center">
+        <a href="sema-viewer.html" class="btn-primary" style="font-size:13px;padding:10px 20px">
+          Open in Full Viewer →
+        </a>
+      </div>
     </div>
   </div>
 </section>
 
+<div class="divider"></div>
+
+<!-- DOWNLOAD -->
+<section id="download">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Get Started</div>
+      <h2 class="section-title">Install SEMA<br>on your system.</h2>
+      <p class="section-sub">Register .sema on your OS so every file opens instantly. Free, open, forever.</p>
+    </div>
+
+    <div class="download-grid">
+      <div class="dl-card featured reveal" style="transition-delay:0.05s">
+        <div class="dl-os">🪟</div>
+        <div class="dl-badge badge-win">.bat installer</div>
+        <div class="dl-name">Windows</div>
+        <div class="dl-desc">One-click installer. Registers .sema system-wide and adds to right-click menu. Run as Administrator.</div>
+        <a href="files/install_sema_windows.bat" download class="dl-btn">
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for Windows
+        </a>
+      </div>
+
+      <div class="dl-card reveal" style="transition-delay:0.1s">
+        <div class="dl-os">🍎</div>
+        <div class="dl-badge badge-mac">.sh script</div>
+        <div class="dl-name">macOS</div>
+        <div class="dl-desc">Shell script that registers the UTI with macOS Launch Services. Run in Terminal.</div>
+        <a href="files/install_sema_macos.sh" download class="dl-btn">
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for macOS
+        </a>
+      </div>
+
+      <div class="dl-card reveal" style="transition-delay:0.15s">
+        <div class="dl-os">🐧</div>
+        <div class="dl-badge badge-linux">.sh script</div>
+        <div class="dl-name">Linux</div>
+        <div class="dl-desc">Registers MIME type via freedesktop.org standard. Works with GNOME, KDE, and all major DEs.</div>
+        <a href="files/install_sema_linux.sh" download class="dl-btn">
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for Linux
+        </a>
+      </div>
+    </div>
+
+    <div class="dl-also reveal">
+      Also available: <a href="sema-spec.html">Read the full Spec</a> · <a href="sema-viewer.html">Open the Viewer</a> · <a href="https://github.com/TREN-Studio/sema" target="_blank">GitHub Repository</a>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MANIFESTO -->
+<section class="manifesto-section" id="manifesto">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Manifesto</div>
+      <p class="manifesto-text">
+        A file is not just a container.<br>
+        A file is a <strong>memory</strong>.<br>
+        A file is a <strong>conversation</strong>.<br>
+        A file is a <em>living thing.</em><br><br>
+        We built SEMA because the world deserves files<br>
+        that <strong>remember where they came from</strong>,<br>
+        <strong>know what they contain</strong>,<br>
+        and can <em>answer your questions</em> —<br>
+        without asking permission from any server,<br>
+        any app, or any company.
+      </p>
+      <div class="manifesto-sig">Larbi &amp; Claude · TREN Studio · 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
 <footer>
-  <span class="fl">.sema Format v1.0</span>
-  <span>Built by <a href="https://trenstudio.com">TREN Studio</a> · Morocco 🇲🇦</span>
-  <span>MIT License · Open Standard · Free Forever</span>
-  <span><a href="https://github.com/TREN-Studio/sema">GitHub</a> · <a href="sema-spec.html">Spec</a> · <a href="https://trenstudio.com">trenstudio.com</a></span>
+  <a class="footer-logo" href="https://trenstudio.com">
+    <div class="nav-mark" style="width:28px;height:28px;font-size:12px">S</div>
+    <span style="font-size:14px;font-weight:600;color:rgba(224,224,240,0.6)">TREN Studio</span>
+  </a>
+  <ul class="footer-links">
+    <li><a href="sema-spec.html">Specification</a></li>
+    <li><a href="sema-viewer.html">Viewer</a></li>
+    <li><a href="https://github.com/TREN-Studio/sema" target="_blank">GitHub</a></li>
+    <li><a href="https://trenstudio.com">TREN Studio</a></li>
+  </ul>
+  <div class="footer-copy">SEMA Format v1.0 · MIT License · Open Standard</div>
 </footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script>
-const obs=new IntersectionObserver(e=>e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('in')}),{threshold:.1});
-document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
-let brain=null;
-const dz=document.getElementById('dz'),fi=document.getElementById('fi'),pb=document.getElementById('pb'),ob=document.getElementById('ob'),ab=document.getElementById('ab');
-['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('ov')}));
-['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('ov')}));
-dz.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)loadF(f)});
-fi.addEventListener('change',e=>{if(e.target.files[0])loadF(e.target.files[0])});
-function loadF(f){dz.classList.add('ok');dz.innerHTML=`<div class="dz-icon">✓</div><div class="dz-name">${f.name}</div><div class="dz-txt">${(f.size/1024).toFixed(1)} KB</div>`;pb.classList.add('v');pb.onclick=()=>proc(f)}
-async function proc(f){pb.textContent='⏳ Building...';pb.disabled=true;ob.innerHTML='';const txt=await rTxt(f);brain=mkBrain(txt,f.name);const steps=[['📋','sema.json','1.1 KB'],['🧠','brain.json','3.8 KB'],['🌐','view.html','9.5 KB'],['📦',`content/${f.name}`,`${(f.size/1024).toFixed(1)} KB`]];for(const[ic,nm,sz]of steps){await slp(380);const r=document.createElement('div');r.className='or';r.innerHTML=`<div class="od"></div><div class="of">${ic} ${nm}</div><div class="oz">${sz} ✓</div>`;ob.appendChild(r);await slp(30);r.classList.add('s')}await slp(200);const d=document.createElement('div');d.className='or s';d.style.paddingTop='14px';d.innerHTML=`<div style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;width:100%">⚡ ${f.name.replace(/\.[^.]+$/,'')}.sema — ${((f.size/1024)+14.4).toFixed(1)} KB total</div>`;ob.appendChild(d);pb.textContent='✓ Done! Ask your file below ↓';pb.style.background='#0a0a00';pb.style.color='var(--accent)';ab.classList.add('v');ab.scrollIntoView({behavior:'smooth',block:'nearest'})}
-function mkBrain(txt,fn){const w=txt.toLowerCase().replace(/[^\w\s\u0600-\u06FF]/g,' ').split(/\s+/).filter(x=>x.length>3);const st=new Set(['this','that','with','from','have','been','they','will','your','what','which','when','where','there','their']);const fr={};w.filter(x=>!st.has(x)).forEach(x=>fr[x]=(fr[x]||0)+1);const kw=Object.entries(fr).sort((a,b)=>b[1]-a[1]).slice(0,12).map(e=>e[0]);const sn=txt.split(/[.!?؟\n]/).filter(s=>s.trim().length>30);const sum=sn.slice(0,2).join('. ').slice(0,200)||fn;const lang=/[\u0600-\u06FF]/.test(txt)?'ar':'en';return{sum,kw,lang,txt:txt.slice(0,5000),qa:[{q:'what is this about',a:sum},{q:'main topics',a:kw.slice(0,6).join(', ')},{q:'keywords',a:kw.join(', ')},{q:'ما هذا',a:sum},{q:'language',a:lang==='ar'?'Arabic (عربية)':'English'}]}}
-document.getElementById('abtn').addEventListener('click',doAsk);
-document.getElementById('qi').addEventListener('keydown',e=>{if(e.key==='Enter')doAsk()});
-function doAsk(){if(!brain)return;const q=document.getElementById('qi').value.trim().toLowerCase();if(!q)return;const ans=document.getElementById('ans');ans.style.display='block';ans.textContent='...';const qw=q.split(' ').filter(x=>x.length>2);let best=null,bs=0;for(const p of brain.qa){const sc=qw.filter(x=>p.q.includes(x)).length;if(sc>bs){bs=sc;best=p}}if(best&&bs>=1){ans.textContent=best.a;return}const sn=brain.txt.split(/[.!?؟\n]/).filter(s=>s.trim().length>20);let top='',ts=0;for(const s of sn){const sc=qw.filter(x=>s.toLowerCase().includes(x)).length;if(sc>ts){ts=sc;top=s.trim()}}ans.textContent=(top&&ts>0)?top:"Try: 'what is this about' or 'keywords'"}
-async function rTxt(f){if(f.type.startsWith('image/'))return`Image: ${f.name}`;if(f.name.endsWith('.pdf'))return`PDF: ${f.name}`;return new Promise(r=>{const fr=new FileReader();fr.onload=e=>r(e.target.result||'');fr.onerror=()=>r('');fr.readAsText(f,'utf-8')})}
-function slp(ms){return new Promise(r=>setTimeout(r,ms))}
+// ── SCROLL REVEAL ──
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(r => observer.observe(r));
+
+// ── DEMO DROP ZONE ──
+const demoDropEl = document.getElementById('demo-drop');
+const dropInput = document.getElementById('drop-input');
+
+demoDropEl.addEventListener('click', () => dropInput.click());
+demoDropEl.addEventListener('dragover', e => { e.preventDefault(); demoDropEl.classList.add('over'); });
+demoDropEl.addEventListener('dragleave', () => demoDropEl.classList.remove('over'));
+demoDropEl.addEventListener('drop', e => {
+  e.preventDefault();
+  demoDropEl.classList.remove('over');
+  const f = e.dataTransfer.files[0];
+  if (f) processDemo(f);
+});
+dropInput.addEventListener('change', e => {
+  if (e.target.files[0]) processDemo(e.target.files[0]);
+});
+
+async function processDemo(file) {
+  const result = document.getElementById('live-result');
+  const resName = document.getElementById('res-name');
+  const resLayers = document.getElementById('res-layers');
+  const resContent = document.getElementById('res-content');
+
+  resName.textContent = file.name;
+  resContent.textContent = 'Reading layers...';
+  resLayers.innerHTML = '';
+  result.style.display = 'block';
+  result.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const entries = Object.keys(zip.files).filter(k => !zip.files[k].dir);
+
+    resLayers.innerHTML = entries.map(e => `
+      <div class="result-layer">
+        <div class="result-layer-name">${e.split('/').pop()}</div>
+        <div class="result-layer-size">${e.split('/')[0]}</div>
+      </div>
+    `).join('');
+
+    let preview = '';
+    for (const e of entries) {
+      if (/\.(txt|md|json|html|csv)$/i.test(e)) {
+        try {
+          const txt = await zip.files[e].async('string');
+          preview = txt.substring(0, 600);
+          break;
+        } catch(err) {}
+      }
+    }
+
+    resContent.textContent = preview || `${entries.length} layer(s) found: ${entries.join(', ')}`;
+  } catch(err) {
+    resContent.textContent = 'Could not parse file: ' + err.message;
+  }
+}
+
+// ── NAV ACTIVE STATE ──
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 120) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#' + current
+      ? 'var(--teal)' : '';
+  });
+});
 </script>
 </body>
 </html>
