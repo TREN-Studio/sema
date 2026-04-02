@@ -32,7 +32,7 @@ function Open-SemaFile($path) {
             $browser = $null
             try {
                 $progId = (Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice' -ErrorAction SilentlyContinue).ProgId
-                if ($progId -match "Brave") { $progId = "BraveHTML" } # Fallback for Brave sometimes
+                if ($progId -match "Brave") { $progId = "BraveHTML" }
                 if ($progId) {
                     $command = (Get-ItemProperty "HKCR:\$progId\shell\open\command" -ErrorAction SilentlyContinue).'(default)'
                     if ($command) {
@@ -45,14 +45,26 @@ function Open-SemaFile($path) {
                 }
             } catch {}
 
+            if (-not ($browser -and (Test-Path $browser))) {
+                $paths = @(
+                    "C:\Program Files\Google\Chrome\Application\chrome.exe",
+                    "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+                    "C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+                    "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe",
+                    "C:\Program Files\Mozilla Firefox\firefox.exe"
+                )
+                foreach ($p in $paths) {
+                    if (Test-Path $p) {
+                        $browser = $p
+                        break
+                    }
+                }
+            }
+
             if ($browser -and (Test-Path $browser)) {
                 Start-Process $browser -ArgumentList "`"$viewFile`""
             } else {
-                try {
-                    Start-Process "msedge.exe" -ArgumentList "`"$viewFile`"" -ErrorAction Stop
-                } catch {
-                    Start-Process $viewFile
-                }
+                Start-Process $viewFile
             }
         }
 
