@@ -142,23 +142,76 @@ class SemaGuiBuilder(ctk.CTk):
 
     def on_build_success(self, output_path):
         self.progress.stop()
+        self.progress.configure(mode="determinate")
         self.progress.set(1.0)
-        self.select_btn.configure(state="normal", text="Convert Another File")
         
         filename = os.path.basename(output_path)
         self.status_label.configure(
-            text=f"SUCCESS!\n{filename} has been created.\n\nDouble click it to view!",
+            text=f"SUCCESS!\n{filename} is ready.",
             text_color=self.accent_color
         )
         
-        # Open the folder containing the generated file (Windows)
+        # Hide the generic select button, show action buttons
+        self.select_btn.pack_forget()
+        
+        if hasattr(self, 'action_frame'):
+            self.action_frame.destroy()
+            
+        self.action_frame = ctk.CTkFrame(self.frame, fg_color="transparent")
+        self.action_frame.pack(pady=10)
+        
+        self.view_btn = ctk.CTkButton(
+            self.action_frame, 
+            text="👁️ Open inside SEMA Viewer", 
+            command=lambda: self.open_sema_file(output_path),
+            width=250,
+            height=45,
+            font=ctk.CTkFont(size=15, weight="bold"),
+            fg_color="#00C8B4",
+            text_color="#000000",
+            hover_color="#00ff88"
+        )
+        self.view_btn.pack(pady=5)
+        
+        self.reset_btn = ctk.CTkButton(
+            self.action_frame, 
+            text="Convert Another File", 
+            command=self.reset_gui,
+            width=250,
+            height=35,
+            font=ctk.CTkFont(size=13),
+            fg_color="transparent",
+            text_color="#8b949e",
+            border_width=1,
+            border_color="#8b949e",
+            hover_color="#161b22"
+        )
+        self.reset_btn.pack(pady=5)
+        
+        # Auto-open!
+        self.open_sema_file(output_path)
+
+    def reset_gui(self):
+        if hasattr(self, 'action_frame'):
+            self.action_frame.pack_forget()
+        self.select_btn.configure(state="normal", text="Choose File")
+        self.select_btn.pack(pady=20)
+        self.progress.pack_forget()
+        self.status_label.configure(text="Select a document, image, or text file\nto convert it into a semantic archive.", text_color=self.text_color)
+
+    def open_sema_file(self, path):
         try:
-            os.startfile(os.path.dirname(output_path))
-        except:
-            pass
+            # Trust the OS association we registered
+            os.startfile(path)
+        except Exception as e:
+            try:
+                os.startfile(os.path.dirname(path))
+            except:
+                pass
 
     def on_build_fail(self, error_message):
         self.progress.stop()
+        self.progress.configure(mode="determinate")
         self.progress.pack_forget()
         self.select_btn.configure(state="normal", text="Choose File")
         self.status_label.configure(
