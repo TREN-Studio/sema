@@ -3,109 +3,1092 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>.sema Viewer — TREN Studio</title>
+<title>SEMA Viewer — TREN Studio</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0d1117;color:#e6edf3;font-family:'IBM Plex Mono',monospace,system-ui;min-height:100vh;display:flex;flex-direction:column}
-header{background:#161b22;border-bottom:1px solid #30363d;padding:16px 24px;display:flex;justify-content:space-between;align-items:center}
-.logo{font-size:14px;font-weight:700;color:#e6edf3}.logo span{color:#00ff88}
-.badge{background:#00ff88;color:#000;font-size:11px;font-weight:800;padding:4px 10px;letter-spacing:1px}
-main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px}
-#drop{border:2px dashed #30363d;padding:60px 40px;text-align:center;max-width:500px;width:100%;cursor:pointer;transition:all .2s}
-#drop.ov{border-color:#00ff88;background:#001a0a}
-#drop.ok{border-color:#00ff88;border-style:solid}
-.di{font-size:48px;margin-bottom:16px;opacity:.5}
-.dt{font-size:14px;color:#8b949e;line-height:1.8}
-.dn{font-size:16px;color:#00ff88;font-weight:700;margin-top:8px}
-#result{display:none;max-width:700px;width:100%;margin-top:32px}
-#result.v{display:block}
-.card{background:#161b22;border:1px solid #30363d;padding:24px;margin-bottom:16px}
-.cl{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#00ff88;margin-bottom:12px}
-.ct{font-size:15px;color:#e6edf3;line-height:1.7}
-.kws{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.kw{background:#0d1117;border:1px solid #30363d;padding:4px 10px;font-size:12px;border-radius:20px;color:#8b949e}
-.ask-row{display:flex;gap:10px;margin-top:14px}
-#qi{flex:1;background:#0d1117;border:1px solid #30363d;color:#e6edf3;padding:10px 14px;font-size:13px;font-family:inherit;outline:none}
-#qi:focus{border-color:#00ff88}
-#ab{background:#00ff88;color:#000;font-weight:700;border:none;padding:10px 18px;cursor:pointer;font-family:inherit;font-size:13px;letter-spacing:1px}
-#ans{margin-top:12px;font-size:13px;color:#aaa;padding:12px;background:#0d1117;border-left:3px solid #00ff88;display:none;line-height:1.6}
-.mg{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
-.mi{display:flex;flex-direction:column;gap:3px}
-.mk{font-size:10px;color:#8b949e;letter-spacing:1px;text-transform:uppercase}
-.mv{font-size:13px;font-weight:600;word-break:break-all}
-footer{text-align:center;padding:20px;color:#3a3a3a;font-size:11px;letter-spacing:2px;border-top:1px solid #1a1a1a}
-footer a{color:#555;text-decoration:none}
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --teal: #00C8B4;
+    --teal-dim: #00A090;
+    --teal-glow: rgba(0,200,180,0.12);
+    --bg: #0A0A12;
+    --bg2: #0F0F1A;
+    --bg3: #151522;
+    --border: rgba(0,200,180,0.18);
+    --border-dim: rgba(255,255,255,0.07);
+    --text: #E8E8F0;
+    --text-dim: #8888A8;
+    --text-muted: #444460;
+    --font: 'Space Grotesk', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,180,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,180,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  header {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,10,18,0.9);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    background: var(--teal);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 13px;
+    color: #0A0A12;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .logo-text span {
+    color: var(--teal);
+  }
+
+  .header-tag {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-dim);
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── MAIN ── */
+  main {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 2rem;
+  }
+
+  /* ── DROP ZONE ── */
+  #drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 4rem 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    background: rgba(0,200,180,0.02);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #drop-zone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 100%, rgba(0,200,180,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  #drop-zone:hover, #drop-zone.dragging {
+    border-color: var(--teal);
+    background: var(--teal-glow);
+    transform: translateY(-2px);
+  }
+
+  #drop-zone.dragging {
+    border-style: solid;
+  }
+
+  .drop-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.5rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .drop-icon svg {
+    width: 28px;
+    height: 28px;
+    stroke: var(--teal);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  #drop-zone h2 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.5px;
+  }
+
+  #drop-zone p {
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 1.5rem;
+  }
+
+  .btn-upload {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--teal);
+    color: #0A0A12;
+    border: none;
+    padding: 10px 22px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: -0.2px;
+  }
+
+  .btn-upload:hover {
+    background: #00E0CA;
+    transform: translateY(-1px);
+  }
+
+  .file-types {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .file-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  #file-input { display: none; }
+
+  /* ── VIEWER ── */
+  #viewer {
+    display: none;
+    animation: fadeUp 0.4s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── FILE HEADER ── */
+  .file-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .file-info {
+    flex: 1;
+  }
+
+  .file-name {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    margin-bottom: 4px;
+    color: #fff;
+  }
+
+  .file-name span {
+    color: var(--teal);
+  }
+
+  .file-meta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .meta-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  .meta-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    flex-shrink: 0;
+  }
+
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg3);
+    color: var(--text-dim);
+    border: 1px solid var(--border-dim);
+    padding: 8px 14px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn-back:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 3px;
+    margin-bottom: 1.5rem;
+    width: fit-content;
+  }
+
+  .tab {
+    padding: 7px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--text-dim);
+    border: none;
+    background: none;
+    font-family: var(--font);
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .tab.active {
+    background: var(--bg3);
+    color: var(--teal);
+    border: 1px solid var(--border);
+  }
+
+  .tab svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  /* ── PANELS ── */
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* ── CONTENT PANEL ── */
+  .content-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius);
+    padding: 2rem;
+    min-height: 200px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .content-card.mono {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    color: #A8E6DE;
+  }
+
+  /* ── META PANEL ── */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 600px) {
+    .meta-grid { grid-template-columns: 1fr; }
+  }
+
+  .meta-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    transition: border-color 0.2s;
+  }
+
+  .meta-card:hover { border-color: var(--border); }
+
+  .meta-card-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .meta-card-value {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    word-break: break-all;
+  }
+
+  .meta-card-value.teal { color: var(--teal); }
+
+  /* ── FILES PANEL ── */
+  .file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .file-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    transition: all 0.2s;
+    cursor: default;
+  }
+
+  .file-row:hover {
+    border-color: var(--border);
+    background: var(--bg3);
+  }
+
+  .file-row-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .file-icon {
+    width: 32px;
+    height: 32px;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--teal);
+    letter-spacing: 0;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .file-row-name {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--text);
+  }
+
+  .file-row-size {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+  }
+
+  /* ── ASK PANEL ── */
+  .ask-area {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+  }
+
+  .ask-input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .ask-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .ask-input::placeholder { color: var(--text-muted); }
+  .ask-input:focus { border-color: var(--teal); }
+
+  .ask-btn {
+    background: var(--teal);
+    color: #0A0A12;
+    border: none;
+    padding: 10px 18px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ask-btn:hover { background: #00E0CA; }
+  .ask-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .quick-questions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+  }
+
+  .quick-q {
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border-dim);
+    color: var(--text-dim);
+    padding: 5px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-family: var(--font);
+    transition: all 0.2s;
+  }
+
+  .quick-q:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+  }
+
+  #answer-box {
+    display: none;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  .answer-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--teal);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-box {
+    background: var(--bg2);
+    border: 1px solid var(--border-dim);
+    border-radius: var(--radius-sm);
+    padding: 1rem;
+    text-align: center;
+  }
+
+  .stat-box .num {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: -1px;
+    font-family: var(--mono);
+  }
+
+  .stat-box .lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── NO SEMA ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-muted);
+    font-size: 14px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 2rem;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    border-top: 1px solid var(--border-dim);
+    margin-top: 4rem;
+  }
+
+  footer a { color: var(--teal); text-decoration: none; }
+
+  /* ── ERROR STATE ── */
+  .error-msg {
+    background: rgba(220,60,60,0.1);
+    border: 1px solid rgba(220,60,60,0.3);
+    border-radius: var(--radius-sm);
+    padding: 1rem 1.2rem;
+    color: #FF8080;
+    font-size: 14px;
+    margin-bottom: 1rem;
+    display: none;
+  }
+
+  /* ── LOADING ── */
+  .loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 2rem;
+    color: var(--text-dim);
+    font-size: 14px;
+  }
+
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border-dim);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--teal-dim); }
 </style>
 </head>
 <body>
+
 <header>
-  <div class="logo">TREN<span>studio</span> · .sema Viewer</div>
-  <div class="badge">.sema v1.0</div>
-</header>
-<main>
-  <div id="drop" onclick="document.getElementById('fi').click()">
-    <div class="di">📁</div>
-    <div class="dt">Drop a <strong style="color:#00ff88">.sema</strong> file here to open it<br><span style="color:#444">or click to browse</span></div>
-    <input type="file" id="fi" accept=".sema" style="display:none">
+  <div class="logo">
+    <div class="logo-mark">S</div>
+    <div class="logo-text">SEMA <span>Viewer</span></div>
   </div>
-  <div id="result">
-    <div class="card">
-      <div class="cl">📋 Summary</div>
-      <div class="ct" id="r-sum"></div>
-      <div class="kws" id="r-kw"></div>
+  <div class="header-tag">v1.0 · TREN Studio</div>
+</header>
+
+<main>
+  <!-- DROP ZONE -->
+  <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+    <div class="drop-icon">
+      <svg viewBox="0 0 24 24">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
     </div>
-    <div class="card">
-      <div class="cl">💬 Ask This File</div>
-      <div class="ask-row">
-        <input type="text" id="qi" placeholder="Ask anything... / ما هذا الملف؟">
-        <button id="ab">Ask →</button>
+    <h2>Drop your .sema file here</h2>
+    <p>or click to browse from your computer</p>
+    <button class="btn-upload" onclick="event.stopPropagation(); document.getElementById('file-input').click()">
+      <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Choose .sema file
+    </button>
+    <div class="file-types">
+      <span class="file-tag">.sema</span>
+      <span class="file-tag">Semantic File Format</span>
+      <span class="file-tag">by TREN Studio</span>
+    </div>
+    <input type="file" id="file-input" accept=".sema,.zip">
+  </div>
+
+  <div class="error-msg" id="error-msg"></div>
+
+  <!-- VIEWER -->
+  <div id="viewer">
+    <!-- FILE HEADER -->
+    <div class="file-header">
+      <div class="file-info">
+        <div class="file-name" id="file-name">file<span>.sema</span></div>
+        <div class="file-meta-row" id="file-meta-row"></div>
       </div>
-      <div id="ans"></div>
+      <button class="btn-back" id="btn-back">
+        <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        New file
+      </button>
     </div>
-    <div class="card">
-      <div class="cl">📌 File Info</div>
-      <div class="mg" id="r-meta"></div>
+
+    <!-- STATS ROW -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="num" id="stat-size">—</div>
+        <div class="lbl">File size</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="stat-files">—</div>
+        <div class="lbl">Layers</div>
+      </div>
+      <div class="stat-box">
+        <div class="num" id="stat-format">SEMA</div>
+        <div class="lbl">Format</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" data-tab="content">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Content
+      </button>
+      <button class="tab" data-tab="meta">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Metadata
+      </button>
+      <button class="tab" data-tab="files">
+        <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        Layers
+      </button>
+      <button class="tab" data-tab="ask">
+        <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Ask
+      </button>
+    </div>
+
+    <!-- PANEL: CONTENT -->
+    <div class="panel active" id="panel-content">
+      <div class="content-card" id="content-display">
+        <div class="loading"><div class="spinner"></div> Reading file...</div>
+      </div>
+    </div>
+
+    <!-- PANEL: META -->
+    <div class="panel" id="panel-meta">
+      <div class="meta-grid" id="meta-grid"></div>
+    </div>
+
+    <!-- PANEL: FILES -->
+    <div class="panel" id="panel-files">
+      <div class="file-list" id="file-list"></div>
+    </div>
+
+    <!-- PANEL: ASK -->
+    <div class="panel" id="panel-ask">
+      <div class="ask-area">
+        <div class="quick-questions" id="quick-questions"></div>
+        <div class="ask-input-row">
+          <input type="text" class="ask-input" id="ask-input" placeholder="Ask anything about this file...">
+          <button class="ask-btn" id="ask-btn">
+            <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round" viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            Ask
+          </button>
+        </div>
+        <div id="answer-box">
+          <div class="answer-label"><span class="pulse" id="pulse-dot"></span><span id="answer-status">Analyzing...</span></div>
+          <div id="answer-text"></div>
+        </div>
+      </div>
     </div>
   </div>
 </main>
-<footer><a href="https://trenstudio.com/sema">trenstudio.com/sema</a> · .sema Format v1.0 · MIT License</footer>
+
+<footer>
+  SEMA Format v1.0 · <a href="https://trenstudio.com/sema" target="_blank">trenstudio.com/sema</a> · Open Semantic File Standard
+</footer>
+
 <script>
-let brain=null;
-const drop=document.getElementById('drop'),fi=document.getElementById('fi'),result=document.getElementById('result');
-['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('ov')}));
-['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('ov')}));
-drop.addEventListener('drop',e=>{const f=e.dataTransfer.files[0];if(f)open(f)});
-fi.addEventListener('change',e=>{if(e.target.files[0])open(e.target.files[0])});
-async function open(file){
-  drop.classList.add('ok');
-  drop.querySelector('.dt').innerHTML=`<div class="dn">${file.name}</div><div style="color:#444;font-size:12px;margin-top:4px">${(file.size/1024).toFixed(1)} KB · reading...</div>`;
-  try{
-    const JSZip=(await import('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js')).default;
-    // fallback — read as text and parse JSON
-    const ab=await file.arrayBuffer();
-    // Try to extract brain.json and sema.json using basic zip reading
-    const text=new TextDecoder('utf-8').decode(ab);
-    // find brain.json content between markers
-    const bi=text.indexOf('brain.json');
-    document.getElementById('r-sum').textContent='File loaded — brain.json extraction requires JSZip. Drop on a Python-converted file.';
-    result.classList.add('v');
-  }catch(e){
-    // Simple fallback
-    document.getElementById('r-sum').textContent=`File: ${file.name} (${(file.size/1024).toFixed(1)} KB) — Open with the sema_builder tool to generate a full viewer.`;
-    result.classList.add('v');
+const dropZone = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+const viewer = document.getElementById('viewer');
+const errorMsg = document.getElementById('error-msg');
+
+let fileContent = '';
+let fileMeta = {};
+let allFiles = [];
+let fileName = '';
+
+// ── DRAG & DROP ──
+dropZone.addEventListener('dragover', e => {
+  e.preventDefault();
+  dropZone.classList.add('dragging');
+});
+
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragging');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) processFile(e.target.files[0]);
+});
+
+document.getElementById('btn-back').addEventListener('click', () => {
+  viewer.style.display = 'none';
+  dropZone.style.display = 'block';
+  fileInput.value = '';
+});
+
+// ── TABS ──
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ── FORMAT SIZE ──
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+}
+
+// ── GET FILE EXT ──
+function getExt(name) {
+  const parts = name.split('.');
+  return parts.length > 1 ? parts.pop().toUpperCase() : 'FILE';
+}
+
+// ── SHOW ERROR ──
+function showError(msg) {
+  errorMsg.textContent = msg;
+  errorMsg.style.display = 'block';
+  setTimeout(() => errorMsg.style.display = 'none', 5000);
+}
+
+// ── PROCESS FILE ──
+async function processFile(file) {
+  if (!file.name.endsWith('.sema') && !file.name.endsWith('.zip')) {
+    showError('Please select a .sema file.');
+    return;
+  }
+
+  errorMsg.style.display = 'none';
+  fileName = file.name.replace(/\.(sema|zip)$/, '');
+  dropZone.style.display = 'none';
+  viewer.style.display = 'block';
+
+  // Set file name display
+  document.getElementById('file-name').innerHTML = fileName + '<span>.sema</span>';
+
+  // Stats
+  document.getElementById('stat-size').textContent = formatSize(file.size);
+
+  // Read as ZIP
+  try {
+    const zip = await JSZip.loadAsync(file);
+    const entries = Object.keys(zip.files).filter(k => !zip.files[k].dir);
+    allFiles = entries;
+
+    document.getElementById('stat-files').textContent = entries.length;
+
+    // Meta row
+    const metaRow = document.getElementById('file-meta-row');
+    metaRow.innerHTML = `
+      <span class="meta-chip"><span class="dot"></span>${formatSize(file.size)}</span>
+      <span class="meta-chip"><span class="dot"></span>${entries.length} layers</span>
+      <span class="meta-chip"><span class="dot"></span>application/vnd.sema</span>
+    `;
+
+    // ── CONTENT panel ──
+    let mainContent = '';
+    let isCode = false;
+
+    // Priority: content/ folder, then meta.json, then first text file
+    const contentEntry = entries.find(e => e.startsWith('content/'));
+    const metaEntry = entries.find(e => e === 'meta.json' || e === 'sema.json');
+    const brainEntry = entries.find(e => e === 'brain.json');
+    const viewEntry = entries.find(e => e.endsWith('.html'));
+
+    if (contentEntry) {
+      try {
+        mainContent = await zip.files[contentEntry].async('string');
+      } catch(e) {
+        mainContent = '[Binary content — cannot display as text]';
+      }
+    } else if (metaEntry) {
+      const raw = await zip.files[metaEntry].async('string');
+      try {
+        const parsed = JSON.parse(raw);
+        mainContent = JSON.stringify(parsed, null, 2);
+        isCode = true;
+      } catch(e) {
+        mainContent = raw;
+      }
+    } else if (entries.length > 0) {
+      // Try first text-like file
+      for (const e of entries) {
+        if (/\.(txt|md|json|html|csv|py|js|xml)$/i.test(e)) {
+          try {
+            mainContent = await zip.files[e].async('string');
+            isCode = /\.(json|py|js|xml|html)$/i.test(e);
+            break;
+          } catch(err) { continue; }
+        }
+      }
+    }
+
+    if (!mainContent) mainContent = 'No readable content found in this .sema file.';
+
+    const contentDisplay = document.getElementById('content-display');
+    contentDisplay.textContent = mainContent.substring(0, 8000) + (mainContent.length > 8000 ? '\n\n[... truncated ...]' : '');
+    contentDisplay.className = 'content-card' + (isCode ? ' mono' : '');
+    fileContent = mainContent;
+
+    // ── META panel ──
+    let metaObj = {};
+    if (metaEntry) {
+      try {
+        const raw = await zip.files[metaEntry].async('string');
+        metaObj = JSON.parse(raw);
+      } catch(e) {}
+    }
+
+    const metaDefaults = {
+      format: 'SEMA v1.0',
+      created_by: metaObj.author || metaObj.created_by || 'TREN Studio',
+      file_name: file.name,
+      size: formatSize(file.size),
+      layers: entries.length + ' files',
+      mime_type: 'application/vnd.sema',
+      ...metaObj
+    };
+
+    const metaGrid = document.getElementById('meta-grid');
+    metaGrid.innerHTML = Object.entries(metaDefaults).slice(0, 8).map(([k, v]) => `
+      <div class="meta-card">
+        <div class="meta-card-label">${k.replace(/_/g, ' ')}</div>
+        <div class="meta-card-value${['format','mime_type'].includes(k) ? ' teal' : ''}">${String(v).substring(0, 80)}</div>
+      </div>
+    `).join('');
+
+    fileMeta = metaDefaults;
+
+    // ── FILES panel ──
+    const fileList = document.getElementById('file-list');
+    if (entries.length === 0) {
+      fileList.innerHTML = '<div class="empty-state">No layers found inside this .sema file.</div>';
+    } else {
+      fileList.innerHTML = entries.map(entry => {
+        const ext = getExt(entry);
+        return `
+          <div class="file-row">
+            <div class="file-row-left">
+              <div class="file-icon">${ext.substring(0,4)}</div>
+              <div class="file-row-name">${entry}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ── ASK panel quick questions ──
+    const questions = [
+      'What is this file about?',
+      'Who created this?',
+      'What type of content is inside?',
+      'Summarize in one sentence'
+    ];
+
+    document.getElementById('quick-questions').innerHTML = questions.map(q =>
+      `<button class="quick-q" onclick="askQuestion('${q}')">${q}</button>`
+    ).join('');
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById('content-display').textContent =
+      'Could not read this file as a .sema archive.\n\nError: ' + err.message +
+      '\n\nMake sure the file is a valid .sema (ZIP-based) file.';
+    document.getElementById('content-display').className = 'content-card mono';
+    document.getElementById('stat-files').textContent = '?';
+    document.getElementById('file-meta-row').innerHTML = `
+      <span class="meta-chip"><span class="dot"></span>${formatSize(file.size)}</span>
+      <span class="meta-chip" style="color:#FF8080"><span class="dot" style="background:#FF8080"></span>Parse error</span>
+    `;
   }
 }
-document.getElementById('ab').addEventListener('click',doAsk);
-document.getElementById('qi').addEventListener('keydown',e=>{if(e.key==='Enter')doAsk()});
-function doAsk(){
-  if(!brain)return;
-  const q=document.getElementById('qi').value.trim().toLowerCase();
-  const ans=document.getElementById('ans');
-  ans.style.display='block';
-  const qw=q.split(' ').filter(x=>x.length>2);
-  let best=null,bs=0;
-  for(const p of brain.qa||[]){const sc=qw.filter(x=>p.q.toLowerCase().includes(x)).length;if(sc>bs){bs=sc;best=p}}
-  ans.textContent=best&&bs>=1?best.a:"No answer found for this question.";
+
+// ── ASK FUNCTION ──
+async function askQuestion(question) {
+  const input = document.getElementById('ask-input');
+  input.value = question;
+  doAsk();
+}
+
+document.getElementById('ask-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAsk();
+});
+
+document.getElementById('ask-btn').addEventListener('click', doAsk);
+
+function doAsk() {
+  const q = document.getElementById('ask-input').value.trim();
+  if (!q || !fileContent) return;
+
+  const answerBox = document.getElementById('answer-box');
+  const answerText = document.getElementById('answer-text');
+  const pulseEl = document.getElementById('pulse-dot');
+  const statusEl = document.getElementById('answer-status');
+  const btn = document.getElementById('ask-btn');
+
+  answerBox.style.display = 'block';
+  answerText.textContent = '';
+  pulseEl.style.display = 'inline-block';
+  statusEl.textContent = 'Analyzing...';
+  btn.disabled = true;
+
+  // Local intelligence — keyword matching on content
+  const ql = q.toLowerCase();
+  const cl = fileContent.toLowerCase();
+  let answer = '';
+
+  setTimeout(() => {
+    if (ql.includes('about') || ql.includes('what is') || ql.includes('summarize') || ql.includes('summary')) {
+      const firstLines = fileContent.split('\n').filter(l => l.trim()).slice(0, 5).join(' ').substring(0, 400);
+      answer = firstLines || 'This is a SEMA semantic file created by TREN Studio. It contains structured content in layered format (content, metadata, and intelligence layers).';
+    } else if (ql.includes('who') || ql.includes('author') || ql.includes('creat')) {
+      answer = fileMeta.author || fileMeta.created_by || fileMeta.org ||
+        'Created with SEMA Format by TREN Studio. Check the Metadata tab for author details.';
+    } else if (ql.includes('type') || ql.includes('format') || ql.includes('kind')) {
+      answer = `This is a SEMA (Semantic File) v1.0 — an intelligent file format developed by TREN Studio. It is a ZIP-based archive containing ${allFiles.length} layer(s): content, metadata, and optional intelligence layers. MIME type: application/vnd.sema`;
+    } else if (ql.includes('size') || ql.includes('big') || ql.includes('large')) {
+      answer = `The file contains ${allFiles.length} layer(s). The layers inside are: ${allFiles.join(', ')}.`;
+    } else if (ql.includes('layer') || ql.includes('file') || ql.includes('contain')) {
+      answer = allFiles.length > 0
+        ? `This .sema file contains ${allFiles.length} layer(s): ${allFiles.join(', ')}.`
+        : 'No layers found in this file.';
+    } else {
+      // Search in content
+      const words = q.replace(/[?!.,]/g,'').split(' ').filter(w => w.length > 3);
+      let found = '';
+      for (const word of words) {
+        const idx = cl.indexOf(word.toLowerCase());
+        if (idx !== -1) {
+          found = fileContent.substring(Math.max(0, idx - 80), idx + 200).trim();
+          break;
+        }
+      }
+      answer = found
+        ? '...' + found + '...'
+        : `I searched through this .sema file but could not find specific information about "${q}". Try asking about the content type, author, or file layers.`;
+    }
+
+    pulseEl.style.display = 'none';
+    statusEl.textContent = 'Answer';
+    answerText.textContent = answer;
+    btn.disabled = false;
+    document.getElementById('ask-input').value = '';
+  }, 600);
 }
 </script>
 </body>
